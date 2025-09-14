@@ -74,9 +74,9 @@ mkdir -p ~/fpga_controller
 cd ~/fpga_controller
 
 # Copy controller files (assumes run from deployment directory)
-if [ -f "../pi-controller/fpga_gpio_controller.py" ]; then
-    cp ../pi-controller/fpga_gpio_controller.py .
-    cp ../pi-controller/start_webserver.py .
+if [ -f "pi-controller/fpga_gpio_controller.py" ]; then
+    cp pi-controller/fpga_gpio_controller.py .
+    cp version2-webserver/start_webserver.py .
     chmod +x fpga_gpio_controller.py start_webserver.py
 else
     echo "⚠️  Controller files not found. Please run from deployment directory."
