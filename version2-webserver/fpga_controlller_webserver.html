@@ -1,1 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPGA Controller</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            padding: 20px;
+            color: #ffffff;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .connected { background: #1a4a1a; color: #4ade80; }
+        .disconnected { background: #4a1a1a; color: #f87171; }
+        
+        .fpga-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .fpga-card {
+            background: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .fpga-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .leds {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+        
+        .led-col { text-align: center; }
+        
+        .led-name {
+            font-size: 12px;
+            color: #b5b5b5;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .led {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #666;
+            margin: 0 auto;
+            transition: all 0.2s;
+        }
+        
+        .led.red { background: #ef4444; border-color: #dc2626; }
+        .led.green { background: #22c55e; border-color: #16a34a; }
+        .led.blue { background: #3b82f6; border-color: #2563eb; }
+        .led.off { background: #555; border-color: #666; }
+        
+        .controls { display: grid; gap: 12px; }
+        
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #e5e5e5;
+            font-weight: 500;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #3a3a3a;
+            color: #ffffff;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+        }
+        
+        button {
+            background: #28a745;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        
+        button:hover { background: #1e7e34; }
+        
+        .connection-info {
+            background: #333;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .connection-info h3 {
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FPGA Controller</h1>
+        
+        <div class="connection-info">
+            <h3>Auto-Connected</h3>
+            <p>This interface is hosted on the Pi and automatically connects to the controller.</p>
+        </div>
+        
+        <div id="status" class="status disconnected">
+            Connecting...
+        </div>
+        
+        <div class="fpga-grid">
+            <!-- FPGA 1 -->
+            <div class="fpga-card">
+                <div class="fpga-title">FPGA 1</div>
+                <div class="leds">
+                    <div class="led-col">
+                        <div class="led-name">User</div>
+                        <div class="led off" id="fpga1-user"></div>
+                    </div>
+                    <div class="led-col">
+                        <div class="led-name">Loaded</div>
+                        <div class="led off" id="fpga1-loaded"></div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="control-row">
+                        <div>
+                            <label>User</label>
+                            <select id="fpga1-user-sel">
+                                <option value="none">None</option>
+                                <option value="dan">Dan</option>
+                                <option value="nate">Nate</option>
+                                <option value="ben">Ben</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Loaded</label>
+                            <select id="fpga1-loaded-sel">
+                                <option value="false">Off</option>
+                                <option value="true">Loaded</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="update(1)">Update</button>
+                </div>
+            </div>
+            
+            <!-- FPGA 2 -->
+            <div class="fpga-card">
+                <div class="fpga-title">FPGA 2</div>
+                <div class="leds">
+                    <div class="led-col">
+                        <div class="led-name">User</div>
+                        <div class="led off" id="fpga2-user"></div>
+                    </div>
+                    <div class="led-col">
+                        <div class="led-name">Loaded</div>
+                        <div class="led off" id="fpga2-loaded"></div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="control-row">
+                        <div>
+                            <label>User</label>
+                            <select id="fpga2-user-sel">
+                                <option value="none">None</option>
+                                <option value="dan">Dan</option>
+                                <option value="nate">Nate</option>
+                                <option value="ben">Ben</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Loaded</label>
+                            <select id="fpga2-loaded-sel">
+                                <option value="false">Off</option>
+                                <option value="true">Loaded</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="update(2)">Update</button>
+                </div>
+            </div>
+            
+            <!-- FPGA 3 -->
+            <div class="fpga-card">
+                <div class="fpga-title">FPGA 3</div>
+                <div class="leds">
+                    <div class="led-col">
+                        <div class="led-name">User</div>
+                        <div class="led off" id="fpga3-user"></div>
+                    </div>
+                    <div class="led-col">
+                        <div class="led-name">Loaded</div>
+                        <div class="led off" id="fpga3-loaded"></div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="control-row">
+                        <div>
+                            <label>User</label>
+                            <select id="fpga3-user-sel">
+                                <option value="none">None</option>
+                                <option value="dan">Dan</option>
+                                <option value="nate">Nate</option>
+                                <option value="ben">Ben</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Loaded</label>
+                            <select id="fpga3-loaded-sel">
+                                <option value="false">Off</option>
+                                <option value="true">Loaded</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="update(3)">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        let client = null;
+        let connected = false;
+        
+        let state = {
+            fpga1: { user: 'none', loaded: false },
+            fpga2: { user: 'none', loaded: false },
+            fpga3: { user: 'none', loaded: false }
+        };
+        
+        function setStatus(msg, isConnected) {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+            connected = isConnected;
+        }
+        
+        function connect() {
+            const server = window.location.hostname || 'localhost';
+            const port = 9001;
+            
+            setStatus('Connecting...', false);
+            
+            try {
+                const wsUrl = `ws://${server}:${port}`;
+                client = mqtt.connect(wsUrl);
+                
+                client.on('connect', function() {
+                    setStatus('Connected', true);
+                    
+                    // Subscribe to status updates
+                    for (let i = 1; i <= 3; i++) {
+                        client.subscribe(`fpga/status/fpga${i}/user`);
+                        client.subscribe(`fpga/status/fpga${i}/loaded`);
+                    }
+                    
+                    updateDisplay();
+                });
+                
+                client.on('error', function(error) {
+                    setStatus('Connection failed', false);
+                });
+                
+                client.on('close', function() {
+                    setStatus('Connection lost', false);
+                    connected = false;
+                });
+                
+                client.on('message', function(topic, message) {
+                    const payload = message.toString();
+                    
+                    const parts = topic.split('/');
+                    if (parts.length >= 4 && parts[1] === 'status') {
+                        const fpga = parts[2];
+                        const prop = parts[3];
+                        
+                        if (state[fpga]) {
+                            if (prop === 'user') {
+                                state[fpga].user = payload;
+                            } else if (prop === 'loaded') {
+                                state[fpga].loaded = payload === 'true';
+                            }
+                            
+                            updateDisplay();
+                            updateSelects();
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                setStatus('Connection error: ' + error.message, false);
+            }
+        }
+        
+        function updateDisplay() {
+            for (let i = 1; i <= 3; i++) {
+                const fpga = `fpga${i}`;
+                const s = state[fpga];
+                
+                // User LED
+                const userLed = document.getElementById(`${fpga}-user`);
+                if (s.user === 'dan') {
+                    userLed.className = 'led red';
+                } else if (s.user === 'nate') {
+                    userLed.className = 'led blue';
+                } else if (s.user === 'ben') {
+                    userLed.className = 'led green';
+                } else {
+                    userLed.className = 'led off';
+                }
+                
+                // Loaded LED
+                const loadedLed = document.getElementById(`${fpga}-loaded`);
+                loadedLed.className = `led ${s.loaded ? 'green' : 'off'}`;
+            }
+        }
+        
+        function updateSelects() {
+            for (let i = 1; i <= 3; i++) {
+                const fpga = `fpga${i}`;
+                const s = state[fpga];
+                
+                document.getElementById(`${fpga}-user-sel`).value = s.user;
+                document.getElementById(`${fpga}-loaded-sel`).value = s.loaded.toString();
+            }
+        }
+        
+        function update(num) {
+            if (!connected || !client) {
+                return;
+            }
+            
+            const fpga = `fpga${num}`;
+            
+            const user = document.getElementById(`${fpga}-user-sel`).value;
+            const loaded = document.getElementById(`${fpga}-loaded-sel`).value;
+            
+            client.publish(`fpga/command/${fpga}/user`, user);
+            client.publish(`fpga/command/${fpga}/loaded`, loaded);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            for (let i = 1; i <= 3; i++) {
+                const fpga = `fpga${i}`;
+                
+                document.getElementById(`${fpga}-user-sel`).addEventListener('change', function() {
+                    state[fpga].user = this.value;
+                    updateDisplay();
+                });
+                
+                document.getElementById(`${fpga}-loaded-sel`).addEventListener('change', function() {
+                    state[fpga].loaded = this.value === 'true';
+                    updateDisplay();
+                });
+            }
+            
+            updateDisplay();
+            
+            // Auto-connect after 1 second
+            setTimeout(() => connect(), 1000);
+        });
+    </script>
+</body>
+</html>
