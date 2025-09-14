@@ -5,10 +5,9 @@ A robust, production-ready FPGA LED controller system with two interface options
 ## Quick Start
 
 ```bash
-# Download and run setup
-git clone <repository-url>
+# git clone <repo-url>
 cd fpga-controller-deploy
-chmod +x setup.sh
+chmod +x *.sh pi-controller/*.sh
 ./setup.sh
 ```
 
