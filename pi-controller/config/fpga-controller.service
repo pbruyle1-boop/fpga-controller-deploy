@@ -6,8 +6,8 @@ Wants=mosquitto.service
 
 [Service]
 Type=simple
-User=pi
-Group=pi
+User=pi 
+Group=pi 
 WorkingDirectory=/home/pi/fpga_controller
 ExecStart=/usr/bin/python3 /home/pi/fpga_controller/fpga_gpio_controller.py
 Restart=always
