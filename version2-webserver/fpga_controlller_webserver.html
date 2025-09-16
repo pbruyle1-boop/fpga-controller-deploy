@@ -149,6 +149,32 @@
             color: #4ade80;
             margin-bottom: 10px;
         }
+        
+        .dance-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-size: 10px;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.2s;
+        }
+        
+        .dance-button:hover {
+            opacity: 1;
+            background: #ff6b6b;
+        }
+        
+        .dance-active {
+            background: #ff6b6b !important;
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body>
@@ -275,16 +301,25 @@
         </div>
     </div>
 
+    <!-- Hidden dance mode button -->
+    <button class="dance-button" onclick="toggleDanceMode()" title="Dance Mode">♪</button>
+
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
         let client = null;
         let connected = false;
+        let danceMode = false;
+        let danceInterval = null;
+        let danceStep = 0;
         
         let state = {
             fpga1: { user: 'none', loaded: false },
             fpga2: { user: 'none', loaded: false },
             fpga3: { user: 'none', loaded: false }
         };
+        
+        // Store original state before dance mode
+        let originalState = {};
         
         function setStatus(msg, isConnected) {
             const el = document.getElementById('status');
@@ -384,7 +419,7 @@
         }
         
         function update(num) {
-            if (!connected || !client) {
+            if (!connected || !client || danceMode) {
                 return;
             }
             
@@ -397,18 +432,87 @@
             client.publish(`fpga/command/${fpga}/loaded`, loaded);
         }
         
+        function toggleDanceMode() {
+            if (!connected || !client) {
+                return;
+            }
+            
+            const button = document.querySelector('.dance-button');
+            
+            if (danceMode) {
+                // Stop dance mode
+                danceMode = false;
+                clearInterval(danceInterval);
+                button.classList.remove('dance-active');
+                
+                // Restore original state
+                for (let i = 1; i <= 3; i++) {
+                    const fpga = `fpga${i}`;
+                    client.publish(`fpga/command/${fpga}/user`, originalState[fpga].user);
+                    client.publish(`fpga/command/${fpga}/loaded`, originalState[fpga].loaded.toString());
+                }
+            } else {
+                // Start dance mode
+                danceMode = true;
+                danceStep = 0;
+                button.classList.add('dance-active');
+                
+                // Store current state
+                originalState = {
+                    fpga1: { user: state.fpga1.user, loaded: state.fpga1.loaded },
+                    fpga2: { user: state.fpga2.user, loaded: state.fpga2.loaded },
+                    fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
+                };
+                
+                // Start dance sequence
+                danceInterval = setInterval(danceSequence, 2000);
+                danceSequence(); // Run first step immediately
+            }
+        }
+        
+        function danceSequence() {
+            if (!danceMode || !client) return;
+            
+            // Define the sequence: red (dan), green (ben), blue (nate)
+            const colors = ['dan', 'ben', 'nate'];
+            const fpgas = ['fpga1', 'fpga2', 'fpga3'];
+            
+            // Calculate which color and which FPGA
+            const colorIndex = Math.floor(danceStep / 3) % 3;
+            const fpgaIndex = danceStep % 3;
+            const currentColor = colors[colorIndex];
+            
+            // Turn off all user LEDs first
+            for (let i = 0; i < 3; i++) {
+                client.publish(`fpga/command/${fpgas[i]}/user`, 'none');
+            }
+            
+            // Turn on the current FPGA with current color
+            setTimeout(() => {
+                if (danceMode) {
+                    client.publish(`fpga/command/${fpgas[fpgaIndex]}/user`, currentColor);
+                }
+            }, 100);
+            
+            danceStep++;
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             for (let i = 1; i <= 3; i++) {
                 const fpga = `fpga${i}`;
                 
                 document.getElementById(`${fpga}-user-sel`).addEventListener('change', function() {
-                    state[fpga].user = this.value;
-                    updateDisplay();
+                    if (!danceMode) {
+                        state[fpga].user = this.value;
+                        updateDisplay();
+                    }
                 });
                 
                 document.getElementById(`${fpga}-loaded-sel`).addEventListener('change', function() {
-                    state[fpga].loaded = this.value === 'true';
-                    updateDisplay();
+                    if (!danceMode) {
+                        state[fpga].loaded = this.value === 'true';
+                        updateDisplay();
+                    }
                 });
             }
             
