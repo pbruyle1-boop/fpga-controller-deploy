@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-FPGA GPIO Controller - High-Side UDN2981A
-Controls 6 LEDs total (2 per FPGA: User, Loaded)
+FPGA GPIO Controller - High-Side UDN2981A with RGB LEDs
+Controls 9 RGB pins (3 per FPGA: Red, Green, Blue) + 3 Loaded pins
 HIGH-SIDE LOGIC: GPIO HIGH = LED ON, GPIO LOW = LED OFF
 """
 
@@ -25,19 +25,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# GPIO Pin Assignments - 6 LEDs total (2 per FPGA)
+# GPIO Pin Assignments - RGB LEDs (3 pins per FPGA) + Loaded LEDs
 GPIO_PINS = {
     'fpga1': {
-        'user': 18,     # User LED (Red/Blue/Green based on selection)
-        'loaded': 19    # Loaded LED (Green when loaded)
+        'red': 18,      # User LED Red
+        'green': 19,    # User LED Green
+        'blue': 20,     # User LED Blue
+        'loaded': 27    # Loaded LED
     },
     'fpga2': {
-        'user': 20,     # User LED  
-        'loaded': 21    # Loaded LED
+        'red': 21,      # User LED Red
+        'green': 22,    # User LED Green
+        'blue': 23,     # User LED Blue
+        'loaded': 2     # Loaded LED
     },
     'fpga3': {
-        'user': 22,     # User LED
-        'loaded': 23    # Loaded LED
+        'red': 24,      # User LED Red
+        'green': 25,    # User LED Green
+        'blue': 26,     # User LED Blue
+        'loaded': 3     # Loaded LED
     }
 }
 
@@ -102,7 +108,7 @@ class FPGAController:
     
     def setup_gpio(self):
         """Initialize all GPIO pins - start with LEDs OFF"""
-        logger.info("Setting up GPIO pins for high-side UDN2981A:")
+        logger.info("Setting up GPIO pins for high-side UDN2981A with RGB LEDs:")
         for fpga_id, pins in GPIO_PINS.items():
             for led_type, pin in pins.items():
                 if not self.set_pin_output(pin):
@@ -149,7 +155,7 @@ class FPGAController:
                 fpga_id = parts[2]    # fpga1, fpga2, fpga3
                 cmd_type = parts[3]   # user, loaded
                 
-                if fpga_id in GPIO_PINS and cmd_type in GPIO_PINS[fpga_id]:
+                if fpga_id in GPIO_PINS and cmd_type in ['user', 'loaded']:
                     if cmd_type == 'user':
                         self.handle_user_command(fpga_id, payload)
                     elif cmd_type == 'loaded':
@@ -162,20 +168,35 @@ class FPGAController:
         except Exception as e:
             logger.error(f"Error processing message: {e}")
     
+    def set_rgb_color(self, fpga_id, color):
+        """Set RGB LED to specific color"""
+        pins = GPIO_PINS[fpga_id]
+        red_pin = pins['red']
+        green_pin = pins['green']
+        blue_pin = pins['blue']
+        
+        # Turn off all RGB pins first
+        self.set_pin_low(red_pin)
+        self.set_pin_low(green_pin)
+        self.set_pin_low(blue_pin)
+        
+        # Set the appropriate color
+        if color == 'dan':  # Red
+            self.set_pin_high(red_pin)
+            logger.info(f"{fpga_id} RGB LED -> RED (Dan)")
+        elif color == 'ben':  # Green
+            self.set_pin_high(green_pin)
+            logger.info(f"{fpga_id} RGB LED -> GREEN (Ben)")
+        elif color == 'nate':  # Blue
+            self.set_pin_high(blue_pin)
+            logger.info(f"{fpga_id} RGB LED -> BLUE (Nate)")
+        else:  # 'none' or unknown
+            logger.info(f"{fpga_id} RGB LED -> OFF (None)")
+    
     def handle_user_command(self, fpga_id, user):
         """Handle user selection command"""
-        pin = GPIO_PINS[fpga_id]['user']
         current_state[fpga_id]['user'] = user
-        
-        # HIGH-SIDE LOGIC: HIGH = LED ON, LOW = LED OFF
-        if user == 'none':
-            self.set_pin_low(pin)   # LED OFF
-            logger.info(f"{fpga_id} User LED OFF - No user selected")
-        elif user in ['dan', 'nate', 'ben']:
-            self.set_pin_high(pin)  # LED ON
-            logger.info(f"{fpga_id} User LED ON - {user.title()} selected")
-        else:
-            self.set_pin_low(pin)   # LED OFF for unknown user
+        self.set_rgb_color(fpga_id, user)
     
     def handle_loaded_command(self, fpga_id, loaded_str):
         """Handle loaded status command"""
@@ -195,13 +216,31 @@ class FPGAController:
         """Test all LEDs"""
         logger.info("Testing all LEDs...")
         
-        for fpga_id, pins in GPIO_PINS.items():
-            logger.info(f"Testing {fpga_id}...")
-            for led_type, pin in pins.items():
-                self.set_pin_high(pin)  # LED ON
-                time.sleep(0.3)
-                self.set_pin_low(pin)   # LED OFF
-                time.sleep(0.1)
+        for fpga_id in GPIO_PINS.keys():
+            logger.info(f"Testing {fpga_id} RGB...")
+            
+            # Test Red
+            self.set_rgb_color(fpga_id, 'dan')
+            time.sleep(0.3)
+            
+            # Test Green
+            self.set_rgb_color(fpga_id, 'ben')
+            time.sleep(0.3)
+            
+            # Test Blue
+            self.set_rgb_color(fpga_id, 'nate')
+            time.sleep(0.3)
+            
+            # Turn off
+            self.set_rgb_color(fpga_id, 'none')
+            time.sleep(0.1)
+            
+            # Test loaded LED
+            loaded_pin = GPIO_PINS[fpga_id]['loaded']
+            self.set_pin_high(loaded_pin)
+            time.sleep(0.3)
+            self.set_pin_low(loaded_pin)
+            time.sleep(0.1)
         
         logger.info("LED test complete")
     
@@ -221,7 +260,7 @@ class FPGAController:
         hostname = get_hostname()
         ip_address = get_ip_address()
         
-        logger.info("FPGA GPIO Controller - High-Side UDN2981A")
+        logger.info("FPGA GPIO Controller - High-Side UDN2981A with RGB LEDs")
         logger.info(f"Hostname: {hostname}")
         logger.info(f"IP Address: {ip_address}")
         logger.info("GPIO Pin Assignments:")
@@ -230,6 +269,7 @@ class FPGAController:
             logger.info(f"  {fpga_id.upper()}: {pin_list}")
         
         logger.info("High-Side Logic: HIGH=LED ON, LOW=LED OFF")
+        logger.info("RGB Colors: Dan=Red, Ben=Green, Nate=Blue")
         
         self.test_all_leds()
         self.setup_mqtt()
