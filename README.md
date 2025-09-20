@@ -1,7 +1,5 @@
 [MAIN README.md](https://github.com/user-attachments/files/22437116/MAIN.README.md)
-# FPGA Controller - Complete Deployment Package
-
-A robust, production-ready FPGA LED controller system with two interface options and automatic deployment capabilities.
+# FPGA Controller 
 
 ## Quick Start
 
@@ -12,51 +10,23 @@ cd fpga-controller-deploy
 chmod +x *.sh pi-controller/*.sh
 ./setup.sh
 ```
+May have to run service restart after setup
+```bash
+sudo systemctl restart fpga-controller fpga-webserver
+```
 
 After setup, get connection info:
 ```bash
 ./get-pi-info.sh
 ```
 
-## Package Contents
-
-### Core System
-- **High-side UDN2981A compatible** (GPIO HIGH = LED ON)
-- **6 GPIO pins total** (2 per FPGA: User + Loaded)
-- **Auto-connects on boot** - zero maintenance
-- **Network reset capable** - re-run setup.sh anytime
-
-### Two Interface Versions
+### Versions
 
 #### Version 1: Standalone HTML
 - **File**: `version1-standalone/fpga_controller_standalone.html`
-- **Use**: Distribute to users, they open locally
-- **Connection**: Users enter Pi IP address manually
-- **Best for**: Multiple users, different devices
 
 #### Version 2: Web Server
 - **File**: `version2-webserver/fpga_controller_webserver.html`
-- **Use**: Hosted on Pi at `http://pi-ip:8080/`
-- **Connection**: Auto-detects Pi IP
-- **Best for**: Centralized access, mobile devices
-
-## Hardware Setup
-
-### GPIO Pin Assignments
-| FPGA | User LED | Loaded LED |
-|------|----------|------------|
-| FPGA 1 | GPIO 18 | GPIO 19 |
-| FPGA 2 | GPIO 20 | GPIO 21 |
-| FPGA 3 | GPIO 22 | GPIO 23 |
-
-### Wiring (High-Side UDN2981A)
-```
-Pi GPIO → UDN2981A Input → UDN2981A Output → LED → Current Limiting Resistor → Ground
-```
-
-**Logic**: GPIO HIGH (3.3V) = LED ON, GPIO LOW (0V) = LED OFF
-
-## Deployment Scenarios
 
 ### New Pi Setup
 ```bash
@@ -70,10 +40,6 @@ cd fpga-controller-deploy
 cd fpga-controller-deploy
 ./setup.sh  # Same script handles reset
 ```
-
-### After Power Cycle
-Everything starts automatically - no action needed.
-
 ## Access Methods
 
 ### Find Pi Information
@@ -82,14 +48,11 @@ Everything starts automatically - no action needed.
 ```
 
 ### Web Interface Access
-- **Direct IP**: `http://192.168.1.100:8080/` (replace with actual IP)
+- **Direct IP**: `http://(pi-ip):8080/` (replace with actual IP)
 - **mDNS**: `http://fpga-controller.local:8080/`
-- **Standalone**: Download HTML file, open locally
-
-### Mobile Access
-Create QR code pointing to `http://[pi-ip]:8080/` for easy mobile access.
-
-## Service Management
+- **Standalone**: Local HTML file
+  
+## Management
 
 ### View Logs
 ```bash
@@ -119,13 +82,6 @@ mosquitto_pub -h localhost -t 'fpga/command/fpga1/user' -m 'dan'
 # Turn on loaded indicator
 mosquitto_pub -h localhost -t 'fpga/command/fpga1/loaded' -m 'true'
 ```
-
-### Multimeter Verification
-- Black probe to Pi ground
-- Red probe to GPIO pin
-- LED ON command: Should read 3.3V
-- LED OFF command: Should read 0V
-
 ## Troubleshooting
 
 ### Services Won't Start
@@ -168,14 +124,3 @@ fpga-controller-deploy/
 │   └── config/
 └── README.md                          # This file
 ```
-
-## Security Notes
-
-- MQTT allows anonymous connections (local network use)
-- Web server accessible to network (no authentication)
-- Pi runs with elevated GPIO privileges
-- Consider firewall rules for production use
-
-## License
-
-MIT License - See LICENSE file for details.
