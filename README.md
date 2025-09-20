@@ -114,11 +114,9 @@ fpga-controller-deploy/
 ├── get-pi-info.sh                     # System information
 ├── version1-standalone/
 │   ├── fpga_controller_standalone.html
-│   └── README.md
 ├── version2-webserver/
 │   ├── fpga_controller_webserver.html
 │   ├── start_webserver.py
-│   └── README.md
 ├── pi-controller/
 │   ├── fpga_gpio_controller.py
 │   └── config/
