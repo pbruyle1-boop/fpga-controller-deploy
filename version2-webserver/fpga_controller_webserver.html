@@ -154,7 +154,7 @@
         .dance-button {
             position: fixed;
             bottom: 10px;
-            right: 40px;
+            right: 70px;
             width: 20px;
             height: 20px;
             background: #333;
@@ -168,6 +168,22 @@
         }
         
         .christmas-button {
+            position: fixed;
+            bottom: 10px;
+            right: 40px;
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-size: 10px;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.2s;
+        }
+        
+        .random-button {
             position: fixed;
             bottom: 10px;
             right: 10px;
@@ -193,6 +209,11 @@
             background: #228B22;
         }
         
+        .random-button:hover {
+            opacity: 1;
+            background: #9370DB;
+        }
+        
         .dance-active {
             background: #ff6b6b !important;
             opacity: 1 !important;
@@ -200,6 +221,11 @@
         
         .christmas-active {
             background: #228B22 !important;
+            opacity: 1 !important;
+        }
+        
+        .random-active {
+            background: #9370DB !important;
             opacity: 1 !important;
         }
     </style>
@@ -323,11 +349,10 @@
         </div>
     </div>
 
-    <!-- Hidden dance mode button -->
+    <!-- Hidden mode buttons -->
     <button class="dance-button" onclick="toggleDanceMode()" title="Dance Mode">♪</button>
-    
-    <!-- Christmas mode button -->
     <button class="christmas-button" onclick="toggleChristmasMode()" title="Christmas Mode">🎄</button>
+    <button class="random-button" onclick="toggleRandomMode()" title="Random Mode">🎲</button>
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
@@ -335,9 +360,11 @@
         let connected = false;
         let danceMode = false;
         let christmasMode = false;
+        let randomMode = false;
         let danceInterval = null;
         let christmasInterval = null;
         let loadedPulseInterval = null;
+        let randomInterval = null;
         let danceStep = 0;
         let christmasStep = 0;
         
@@ -448,7 +475,7 @@
         }
         
         function update(num) {
-            if (!connected || !client || danceMode || christmasMode) {
+            if (!connected || !client || danceMode || christmasMode || randomMode) {
                 return;
             }
             
@@ -540,7 +567,6 @@
                 // Stop Christmas mode
                 christmasMode = false;
                 clearInterval(christmasInterval);
-                clearInterval(loadedPulseInterval);
                 button.classList.remove('christmas-active');
                 
                 // Restore original state
@@ -569,63 +595,169 @@
                     fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
                 };
                 
-                // Start Christmas twinkling - slower, softer
-                christmasInterval = setInterval(christmasTwinkle, 1500);
-                loadedPulseInterval = setInterval(christmasLoadedPulse, 3000);
-                christmasTwinkle(); // Run first step immediately
+                // Turn on all loaded LEDs immediately and keep them on
+                const fpgas = ['fpga1', 'fpga2', 'fpga3'];
+                for (let i = 0; i < 3; i++) {
+                    client.publish(`fpga/command/${fpgas[i]}/loaded`, 'true');
+                }
+                
+                // Start Christmas color transitions - slower, softer
+                christmasInterval = setInterval(christmasColorTransition, 2000);
+                christmasColorTransition(); // Run first step immediately
             }
         }
         
-        function christmasTwinkle() {
+        function christmasColorTransition() {
             if (!christmasMode || !client) return;
             
             const fpgas = ['fpga1', 'fpga2', 'fpga3'];
-            const christmasColors = ['dan', 'ben']; // Red and Green only
             
-            // Turn off all user LEDs first
+            // Cycle between all green, all red, and transitions
+            const step = christmasStep % 6;
+            
+            switch(step) {
+                case 0: // All green
+                    for (let i = 0; i < 3; i++) {
+                        client.publish(`fpga/command/${fpgas[i]}/user`, 'ben');
+                    }
+                    break;
+                case 1: // Green->Red transition: 2 green, 1 red
+                    client.publish(`fpga/command/fpga1/user`, 'ben');
+                    client.publish(`fpga/command/fpga2/user`, 'ben');
+                    client.publish(`fpga/command/fpga3/user`, 'dan');
+                    break;
+                case 2: // Green->Red transition: 1 green, 2 red
+                    client.publish(`fpga/command/fpga1/user`, 'ben');
+                    client.publish(`fpga/command/fpga2/user`, 'dan');
+                    client.publish(`fpga/command/fpga3/user`, 'dan');
+                    break;
+                case 3: // All red
+                    for (let i = 0; i < 3; i++) {
+                        client.publish(`fpga/command/${fpgas[i]}/user`, 'dan');
+                    }
+                    break;
+                case 4: // Red->Green transition: 2 red, 1 green
+                    client.publish(`fpga/command/fpga1/user`, 'dan');
+                    client.publish(`fpga/command/fpga2/user`, 'dan');
+                    client.publish(`fpga/command/fpga3/user`, 'ben');
+                    break;
+                case 5: // Red->Green transition: 1 red, 2 green
+                    client.publish(`fpga/command/fpga1/user`, 'dan');
+                    client.publish(`fpga/command/fpga2/user`, 'ben');
+                    client.publish(`fpga/command/fpga3/user`, 'ben');
+                    break;
+            }
+            
+            christmasStep++;
+        }
+        
+        function toggleRandomMode() {
+            if (!connected || !client) {
+                return;
+            }
+            
+            const button = document.querySelector('.random-button');
+            const danceButton = document.querySelector('.dance-button');
+            const christmasButton = document.querySelector('.christmas-button');
+            
+            if (randomMode) {
+                // Stop Random mode
+                randomMode = false;
+                clearInterval(randomInterval);
+                button.classList.remove('random-active');
+                
+                // Restore original state
+                for (let i = 1; i <= 3; i++) {
+                    const fpga = `fpga${i}`;
+                    client.publish(`fpga/command/${fpga}/user`, originalState[fpga].user);
+                    client.publish(`fpga/command/${fpga}/loaded`, originalState[fpga].loaded.toString());
+                }
+            } else {
+                // Stop other modes if they're running
+                if (danceMode) {
+                    danceMode = false;
+                    clearInterval(danceInterval);
+                    danceButton.classList.remove('dance-active');
+                }
+                if (christmasMode) {
+                    christmasMode = false;
+                    clearInterval(christmasInterval);
+                    clearInterval(loadedPulseInterval);
+                    christmasButton.classList.remove('christmas-active');
+                }
+                
+                // Start Random mode
+                randomMode = true;
+                button.classList.add('random-active');
+                
+                // Store current state
+                originalState = {
+                    fpga1: { user: state.fpga1.user, loaded: state.fpga1.loaded },
+                    fpga2: { user: state.fpga2.user, loaded: state.fpga2.loaded },
+                    fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
+                };
+                
+                // Start random sequence - fast at 200ms
+                randomInterval = setInterval(randomSequence, 200);
+                randomSequence(); // Run first step immediately
+            }
+        }
+        
+        function randomSequence() {
+            if (!randomMode || !client) return;
+            
+            const fpgas = ['fpga1', 'fpga2', 'fpga3'];
+            const userOptions = ['none', 'dan', 'blake', 'ben'];
+            const loadedOptions = [true, false];
+            
+            // Turn off all LEDs first
             for (let i = 0; i < 3; i++) {
                 client.publish(`fpga/command/${fpgas[i]}/user`, 'none');
+                client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
             }
             
-            // Randomly light up 1-2 FPGAs with red or green
-            const numLights = Math.random() < 0.6 ? 1 : 2; // 60% chance of 1 light, 40% chance of 2
-            const usedFPGAs = [];
+            // Create array of all 16 possible combinations
+            const allCombinations = [];
             
-            for (let i = 0; i < numLights; i++) {
-                let fpgaIndex;
-                do {
-                    fpgaIndex = Math.floor(Math.random() * 3);
-                } while (usedFPGAs.includes(fpgaIndex));
-                
-                usedFPGAs.push(fpgaIndex);
-                const randomColor = christmasColors[Math.floor(Math.random() * 2)];
-                
-                setTimeout(() => {
-                    if (christmasMode) {
-                        client.publish(`fpga/command/${fpgas[fpgaIndex]}/user`, randomColor);
-                    }
-                }, 100);
-            }
-        }
-        
-        function christmasLoadedPulse() {
-            if (!christmasMode || !client) return;
-            
-            const fpgas = ['fpga1', 'fpga2', 'fpga3'];
-            
-            // Turn on all loaded LEDs
-            for (let i = 0; i < 3; i++) {
-                client.publish(`fpga/command/${fpgas[i]}/loaded`, 'true');
-            }
-            
-            // Turn them off after 1.5 seconds for a gentle pulse effect
-            setTimeout(() => {
-                if (christmasMode) {
-                    for (let i = 0; i < 3; i++) {
-                        client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
+            // Add user LED combinations (4 options × 3 FPGAs = 12 combinations)
+            for (let fpga = 0; fpga < 3; fpga++) {
+                for (let user = 0; user < 4; user++) {
+                    if (userOptions[user] !== 'none') { // Skip 'none' for user LEDs
+                        allCombinations.push({
+                            type: 'user',
+                            fpga: fpga,
+                            value: userOptions[user]
+                        });
                     }
                 }
-            }, 1500);
+            }
+            
+            // Add loaded LED combinations (1 option × 3 FPGAs = 3 combinations)
+            for (let fpga = 0; fpga < 3; fpga++) {
+                allCombinations.push({
+                    type: 'loaded',
+                    fpga: fpga,
+                    value: true
+                });
+            }
+            
+            // Add one completely off state
+            allCombinations.push({
+                type: 'off',
+                fpga: null,
+                value: null
+            });
+            
+            // Randomly select one combination
+            const randomChoice = allCombinations[Math.floor(Math.random() * allCombinations.length)];
+            
+            // Apply the random choice
+            if (randomChoice.type === 'user') {
+                client.publish(`fpga/command/${fpgas[randomChoice.fpga]}/user`, randomChoice.value);
+            } else if (randomChoice.type === 'loaded') {
+                client.publish(`fpga/command/${fpgas[randomChoice.fpga]}/loaded`, 'true');
+            }
+            // If type is 'off', everything stays off (already turned off above)
         }
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -633,14 +765,14 @@
                 const fpga = `fpga${i}`;
                 
                 document.getElementById(`${fpga}-user-sel`).addEventListener('change', function() {
-                    if (!danceMode && !christmasMode) {
+                    if (!danceMode && !christmasMode && !randomMode) {
                         state[fpga].user = this.value;
                         updateDisplay();
                     }
                 });
                 
                 document.getElementById(`${fpga}-loaded-sel`).addEventListener('change', function() {
-                    if (!danceMode && !christmasMode) {
+                    if (!danceMode && !christmasMode && !randomMode) {
                         state[fpga].loaded = this.value === 'true';
                         updateDisplay();
                     }
