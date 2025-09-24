@@ -41,7 +41,7 @@ GPIO_PINS = {
     },
     'fpga3': {
         'red': 24,      # User LED Red
-        'green': 25,    # User LED Green (skip if hardware issue)
+        'green': 25,    # User LED Green
         'blue': 26,     # User LED Blue
         'loaded': 3     # Loaded LED
     }
@@ -89,17 +89,11 @@ class FPGAController:
     
     def set_pin_output(self, pin):
         """Set pin as output"""
-        if pin == 25:
-            logger.warning(f"Skipping GPIO {pin} - hardware issue")
-            return True
         success, output = self.run_pinctrl(f"set {pin} op")
         return success
     
     def set_pin_high(self, pin):
         """Set pin high (3.3V) - LED ON for high-side UDN2981A"""
-        if pin == 25:
-            logger.warning(f"Skipping GPIO {pin} - hardware issue")
-            return True
         success, output = self.run_pinctrl(f"set {pin} dh")
         if success:
             logger.info(f"GPIO {pin} -> HIGH (3.3V) - LED ON")
@@ -107,9 +101,6 @@ class FPGAController:
     
     def set_pin_low(self, pin):
         """Set pin low (0V) - LED OFF for high-side UDN2981A"""
-        if pin == 25:
-            logger.warning(f"Skipping GPIO {pin} - hardware issue")
-            return True
         success, output = self.run_pinctrl(f"set {pin} dl")
         if success:
             logger.info(f"GPIO {pin} -> LOW (0V) - LED OFF")
