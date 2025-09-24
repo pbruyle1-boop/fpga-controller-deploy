@@ -154,6 +154,22 @@
         .dance-button {
             position: fixed;
             bottom: 10px;
+            right: 40px;
+            width: 20px;
+            height: 20px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-size: 10px;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.2s;
+        }
+        
+        .christmas-button {
+            position: fixed;
+            bottom: 10px;
             right: 10px;
             width: 20px;
             height: 20px;
@@ -172,8 +188,18 @@
             background: #ff6b6b;
         }
         
+        .christmas-button:hover {
+            opacity: 1;
+            background: #228B22;
+        }
+        
         .dance-active {
             background: #ff6b6b !important;
+            opacity: 1 !important;
+        }
+        
+        .christmas-active {
+            background: #228B22 !important;
             opacity: 1 !important;
         }
     </style>
@@ -299,14 +325,21 @@
 
     <!-- Hidden dance mode button -->
     <button class="dance-button" onclick="toggleDanceMode()" title="Dance Mode">♪</button>
+    
+    <!-- Christmas mode button -->
+    <button class="christmas-button" onclick="toggleChristmasMode()" title="Christmas Mode">🎄</button>
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
         let client = null;
         let connected = false;
         let danceMode = false;
+        let christmasMode = false;
         let danceInterval = null;
+        let christmasInterval = null;
+        let loadedPulseInterval = null;
         let danceStep = 0;
+        let christmasStep = 0;
         
         let state = {
             fpga1: { user: 'none', loaded: false },
@@ -415,7 +448,7 @@
         }
         
         function update(num) {
-            if (!connected || !client || danceMode) {
+            if (!connected || !client || danceMode || christmasMode) {
                 return;
             }
             
@@ -495,19 +528,119 @@
             danceStep++;
         }
         
+        function toggleChristmasMode() {
+            if (!connected || !client) {
+                return;
+            }
+            
+            const button = document.querySelector('.christmas-button');
+            const danceButton = document.querySelector('.dance-button');
+            
+            if (christmasMode) {
+                // Stop Christmas mode
+                christmasMode = false;
+                clearInterval(christmasInterval);
+                clearInterval(loadedPulseInterval);
+                button.classList.remove('christmas-active');
+                
+                // Restore original state
+                for (let i = 1; i <= 3; i++) {
+                    const fpga = `fpga${i}`;
+                    client.publish(`fpga/command/${fpga}/user`, originalState[fpga].user);
+                    client.publish(`fpga/command/${fpga}/loaded`, originalState[fpga].loaded.toString());
+                }
+            } else {
+                // Stop dance mode if it's running
+                if (danceMode) {
+                    danceMode = false;
+                    clearInterval(danceInterval);
+                    danceButton.classList.remove('dance-active');
+                }
+                
+                // Start Christmas mode
+                christmasMode = true;
+                christmasStep = 0;
+                button.classList.add('christmas-active');
+                
+                // Store current state
+                originalState = {
+                    fpga1: { user: state.fpga1.user, loaded: state.fpga1.loaded },
+                    fpga2: { user: state.fpga2.user, loaded: state.fpga2.loaded },
+                    fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
+                };
+                
+                // Start Christmas twinkling - slower, softer
+                christmasInterval = setInterval(christmasTwinkle, 1500);
+                loadedPulseInterval = setInterval(christmasLoadedPulse, 3000);
+                christmasTwinkle(); // Run first step immediately
+            }
+        }
+        
+        function christmasTwinkle() {
+            if (!christmasMode || !client) return;
+            
+            const fpgas = ['fpga1', 'fpga2', 'fpga3'];
+            const christmasColors = ['dan', 'ben']; // Red and Green only
+            
+            // Turn off all user LEDs first
+            for (let i = 0; i < 3; i++) {
+                client.publish(`fpga/command/${fpgas[i]}/user`, 'none');
+            }
+            
+            // Randomly light up 1-2 FPGAs with red or green
+            const numLights = Math.random() < 0.6 ? 1 : 2; // 60% chance of 1 light, 40% chance of 2
+            const usedFPGAs = [];
+            
+            for (let i = 0; i < numLights; i++) {
+                let fpgaIndex;
+                do {
+                    fpgaIndex = Math.floor(Math.random() * 3);
+                } while (usedFPGAs.includes(fpgaIndex));
+                
+                usedFPGAs.push(fpgaIndex);
+                const randomColor = christmasColors[Math.floor(Math.random() * 2)];
+                
+                setTimeout(() => {
+                    if (christmasMode) {
+                        client.publish(`fpga/command/${fpgas[fpgaIndex]}/user`, randomColor);
+                    }
+                }, 100);
+            }
+        }
+        
+        function christmasLoadedPulse() {
+            if (!christmasMode || !client) return;
+            
+            const fpgas = ['fpga1', 'fpga2', 'fpga3'];
+            
+            // Turn on all loaded LEDs
+            for (let i = 0; i < 3; i++) {
+                client.publish(`fpga/command/${fpgas[i]}/loaded`, 'true');
+            }
+            
+            // Turn them off after 1.5 seconds for a gentle pulse effect
+            setTimeout(() => {
+                if (christmasMode) {
+                    for (let i = 0; i < 3; i++) {
+                        client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
+                    }
+                }
+            }, 1500);
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             for (let i = 1; i <= 3; i++) {
                 const fpga = `fpga${i}`;
                 
                 document.getElementById(`${fpga}-user-sel`).addEventListener('change', function() {
-                    if (!danceMode) {
+                    if (!danceMode && !christmasMode) {
                         state[fpga].user = this.value;
                         updateDisplay();
                     }
                 });
                 
                 document.getElementById(`${fpga}-loaded-sel`).addEventListener('change', function() {
-                    if (!danceMode) {
+                    if (!danceMode && !christmasMode) {
                         state[fpga].loaded = this.value === 'true';
                         updateDisplay();
                     }
