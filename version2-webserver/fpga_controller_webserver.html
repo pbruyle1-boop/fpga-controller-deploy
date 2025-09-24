@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPGA GUI</title>
+    <title>FPGA Controller</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -179,7 +179,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>FPGA Controller</h1>           
+        <h1>FPGA Controller</h1>
+        
+        <div class="connection-info">
+            <h3>Auto-Connected</h3>
+            <p>This interface is hosted on the Pi and automatically connects to the controller.</p>
+        </div>
+        
         <div id="status" class="status disconnected">
             Connecting...
         </div>
@@ -205,7 +211,7 @@
                             <select id="fpga1-user-sel">
                                 <option value="none">None</option>
                                 <option value="dan">Dan</option>
-                                <option value="nate">Nate</option>
+                                <option value="blake">Blake</option>
                                 <option value="ben">Ben</option>
                             </select>
                         </div>
@@ -241,7 +247,7 @@
                             <select id="fpga2-user-sel">
                                 <option value="none">None</option>
                                 <option value="dan">Dan</option>
-                                <option value="nate">Nate</option>
+                                <option value="blake">Blake</option>
                                 <option value="ben">Ben</option>
                             </select>
                         </div>
@@ -277,7 +283,7 @@
                             <select id="fpga3-user-sel">
                                 <option value="none">None</option>
                                 <option value="dan">Dan</option>
-                                <option value="nate">Nate</option>
+                                <option value="blake">Blake</option>
                                 <option value="ben">Ben</option>
                             </select>
                         </div>
@@ -388,7 +394,7 @@
                 const userLed = document.getElementById(`${fpga}-user`);
                 if (s.user === 'dan') {
                     userLed.className = 'led red';
-                } else if (s.user === 'nate') {
+                } else if (s.user === 'blake') {
                     userLed.className = 'led blue';
                 } else if (s.user === 'ben') {
                     userLed.className = 'led green';
@@ -458,8 +464,8 @@
                     fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
                 };
                 
-                // Start dance sequence
-                danceInterval = setInterval(danceSequence, 2000);
+                // Start dance sequence - much faster at 300ms intervals
+                danceInterval = setInterval(danceSequence, 300);
                 danceSequence(); // Run first step immediately
             }
         }
@@ -467,8 +473,8 @@
         function danceSequence() {
             if (!danceMode || !client) return;
             
-            // Define the sequence: red (dan), green (ben), blue (nate)
-            const colors = ['dan', 'ben', 'nate'];
+            // Define the sequence: red (dan), green (ben), blue (blake)
+            const colors = ['dan', 'ben', 'blake'];
             const fpgas = ['fpga1', 'fpga2', 'fpga3'];
             
             // Calculate which color and which FPGA
@@ -486,7 +492,7 @@
                 if (danceMode) {
                     client.publish(`fpga/command/${fpgas[fpgaIndex]}/user`, currentColor);
                 }
-            }, 100);
+            }, 50);
             
             danceStep++;
         }
