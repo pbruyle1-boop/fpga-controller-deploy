@@ -91,6 +91,7 @@
         
         .led.red { background: #ef4444; border-color: #dc2626; }
         .led.green { background: #22c55e; border-color: #16a34a; }
+        .led.orange { background: #FF6747; border-color: #E55A3F; }
         .led.blue { background: #3b82f6; border-color: #2563eb; }
         .led.off { background: #555; border-color: #666; }
         
@@ -402,9 +403,9 @@
                     userLed.className = 'led off';
                 }
                 
-                // Loaded LED
+                // Loaded LED - now orange instead of green
                 const loadedLed = document.getElementById(`${fpga}-loaded`);
-                loadedLed.className = `led ${s.loaded ? 'green' : 'off'}`;
+                loadedLed.className = `led ${s.loaded ? 'orange' : 'off'}`;
             }
         }
         
