@@ -41,7 +41,7 @@ GPIO_PINS = {
     },
     'fpga3': {
         'red': 24,      # User LED Red
-        'green': 25,    # User LED Green
+        'green': 25,    # User LED Green (skip if hardware issue)
         'blue': 26,     # User LED Blue
         'loaded': 3     # Loaded LED
     }
@@ -89,11 +89,17 @@ class FPGAController:
     
     def set_pin_output(self, pin):
         """Set pin as output"""
+        if pin == 25:
+            logger.warning(f"Skipping GPIO {pin} - hardware issue")
+            return True
         success, output = self.run_pinctrl(f"set {pin} op")
         return success
     
     def set_pin_high(self, pin):
         """Set pin high (3.3V) - LED ON for high-side UDN2981A"""
+        if pin == 25:
+            logger.warning(f"Skipping GPIO {pin} - hardware issue")
+            return True
         success, output = self.run_pinctrl(f"set {pin} dh")
         if success:
             logger.info(f"GPIO {pin} -> HIGH (3.3V) - LED ON")
@@ -101,6 +107,9 @@ class FPGAController:
     
     def set_pin_low(self, pin):
         """Set pin low (0V) - LED OFF for high-side UDN2981A"""
+        if pin == 25:
+            logger.warning(f"Skipping GPIO {pin} - hardware issue")
+            return True
         success, output = self.run_pinctrl(f"set {pin} dl")
         if success:
             logger.info(f"GPIO {pin} -> LOW (0V) - LED OFF")
@@ -187,9 +196,9 @@ class FPGAController:
         elif color == 'ben':  # Green
             self.set_pin_high(green_pin)
             logger.info(f"{fpga_id} RGB LED -> GREEN (Ben)")
-        elif color == 'nate':  # Blue
+        elif color == 'blake':  # Blue
             self.set_pin_high(blue_pin)
-            logger.info(f"{fpga_id} RGB LED -> BLUE (Nate)")
+            logger.info(f"{fpga_id} RGB LED -> BLUE (Blake)")
         else:  # 'none' or unknown
             logger.info(f"{fpga_id} RGB LED -> OFF (None)")
     
@@ -228,7 +237,7 @@ class FPGAController:
             time.sleep(0.3)
             
             # Test Blue
-            self.set_rgb_color(fpga_id, 'nate')
+            self.set_rgb_color(fpga_id, 'blake')
             time.sleep(0.3)
             
             # Turn off
@@ -269,7 +278,7 @@ class FPGAController:
             logger.info(f"  {fpga_id.upper()}: {pin_list}")
         
         logger.info("High-Side Logic: HIGH=LED ON, LOW=LED OFF")
-        logger.info("RGB Colors: Dan=Red, Ben=Green, Nate=Blue")
+        logger.info("RGB Colors: Dan=Red, Ben=Green, Blake=Blue")
         
         self.test_all_leds()
         self.setup_mqtt()
