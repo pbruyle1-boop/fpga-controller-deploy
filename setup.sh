@@ -10,21 +10,21 @@ echo "================================================"
 
 # Check if running as root
 if [ "$EUID" -eq 0 ]; then
-  echo "❌ Don't run this script as root! Run as regular user (pi)"
+  echo " Don't run this script as root! Run as regular user (pi)"
   exit 1
 fi
 
 # Set hostname
-echo "🏷️  Setting hostname to fpga-controller..."
+echo "Setting hostname to fpga-controller..."
 echo "fpga-controller" | sudo tee /etc/hostname > /dev/null
 sudo sed -i 's/127.0.1.1.*/127.0.1.1\tfpga-controller/' /etc/hosts
 
 # Update system
-echo "📦 Updating system..."
+echo "Updating system..."
 sudo apt update && sudo apt upgrade -y
 
 # Install required packages
-echo "📦 Installing packages..."
+echo "Installing packages..."
 sudo apt install -y python3 python3-pip python3-paho-mqtt mosquitto mosquitto-clients git avahi-daemon
 
 # Enable mDNS discovery
@@ -32,7 +32,7 @@ sudo systemctl enable avahi-daemon
 sudo systemctl start avahi-daemon
 
 # Setup MQTT broker
-echo "⚙️  Configuring MQTT broker..."
+echo "Configuring MQTT broker..."
 sudo systemctl stop mosquitto 2>/dev/null || true
 
 sudo tee /etc/mosquitto/mosquitto.conf > /dev/null <<EOF
@@ -69,7 +69,7 @@ WantedBy=multi-user.target
 EOF
 
 # Setup project directory
-echo "📁 Setting up project..."
+echo "Setting up project..."
 mkdir -p ~/fpga_controller
 cd ~/fpga_controller
 
@@ -79,7 +79,7 @@ if [ -f "pi-controller/fpga_gpio_controller.py" ]; then
     cp version2-webserver/start_webserver.py .
     chmod +x fpga_gpio_controller.py start_webserver.py
 else
-    echo "⚠️  Controller files not found. Please run from deployment directory."
+    echo "Controller files not found. Please run from deployment directory."
     exit 1
 fi
 
@@ -124,7 +124,7 @@ WantedBy=multi-user.target
 EOF
 
 # Enable and start services
-echo "🚀 Starting services..."
+echo "Starting services..."
 sudo systemctl daemon-reload
 sudo systemctl enable mosquitto fpga-controller fpga-webserver
 sudo systemctl start mosquitto
@@ -134,16 +134,16 @@ sleep 2
 sudo systemctl start fpga-webserver
 
 # Test GPIO
-echo "🧪 Testing GPIO..."
+echo "Testing GPIO..."
 if command -v pinctrl &> /dev/null; then
     for pin in 18 19 20 21 22 23; do
         sudo pinctrl set $pin op
         sudo pinctrl set $pin dh
         sudo pinctrl set $pin dl
     done
-    echo "✅ GPIO test complete"
+    echo "GPIO test complete"
 else
-    echo "❌ pinctrl not available"
+    echo " pinctrl not available"
 fi
 
 # Create IP detection script
@@ -170,13 +170,13 @@ chmod +x ~/get-pi-info.sh
 sleep 5
 
 # Check service status
-echo "🔍 Checking services..."
+echo "Checking services..."
 sudo systemctl status mosquitto --no-pager -l
 sudo systemctl status fpga-controller --no-pager -l
 sudo systemctl status fpga-webserver --no-pager -l
 
 echo ""
-echo "🎉 Setup complete!"
+echo "Setup complete!"
 echo ""
 echo "Run './get-pi-info.sh' to see connection details"
 echo "Reboot recommended to ensure hostname takes effect"
