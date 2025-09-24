@@ -182,6 +182,11 @@
     <div class="container">
         <h1>FPGA Controller</h1>
         
+        <div class="connection-info">
+            <h3>Auto-Connected</h3>
+            <p>This interface is hosted on the Pi and automatically connects to the controller.</p>
+        </div>
+        
         <div id="status" class="status disconnected">
             Connecting...
         </div>
@@ -478,15 +483,17 @@
             const fpgaIndex = danceStep % 3;
             const currentColor = colors[colorIndex];
             
-            // Turn off all user LEDs first
+            // Turn off all user and loaded LEDs first
             for (let i = 0; i < 3; i++) {
                 client.publish(`fpga/command/${fpgas[i]}/user`, 'none');
+                client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
             }
             
-            // Turn on the current FPGA with current color
+            // Turn on the current FPGA with current color and loaded LED
             setTimeout(() => {
                 if (danceMode) {
                     client.publish(`fpga/command/${fpgas[fpgaIndex]}/user`, currentColor);
+                    client.publish(`fpga/command/${fpgas[fpgaIndex]}/loaded`, 'true');
                 }
             }, 50);
             
