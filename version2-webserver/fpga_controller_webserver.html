@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPGA Controller GUI</title>
+    <title>FPGA Controller</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -91,8 +91,8 @@
         
         .led.red { background: #ef4444; border-color: #dc2626; }
         .led.green { background: #22c55e; border-color: #16a34a; }
-        .led.orange { background: #FF6747; border-color: #E55A3F; }
         .led.blue { background: #3b82f6; border-color: #2563eb; }
+        .led.orange { background: #FF6747; border-color: #E55A3F; }
         .led.off { background: #555; border-color: #666; }
         
         .controls { display: grid; gap: 12px; }
@@ -234,6 +234,11 @@
     <div class="container">
         <h1>FPGA Controller</h1>
         
+        <div class="connection-info">
+            <h3>MQTT Connection</h3>
+            <p>Automatically connects to MQTT broker for real-time LED control.</p>
+        </div>
+        
         <div id="status" class="status disconnected">
             Connecting...
         </div>
@@ -354,7 +359,7 @@
     <button class="christmas-button" onclick="toggleChristmasMode()" title="Christmas Mode">🎄</button>
     <button class="random-button" onclick="toggleRandomMode()" title="Random Mode">🎲</button>
 
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="mqtt.min.js"></script>
     <script>
         let client = null;
         let connected = false;
@@ -363,7 +368,6 @@
         let randomMode = false;
         let danceInterval = null;
         let christmasInterval = null;
-        let loadedPulseInterval = null;
         let randomInterval = null;
         let danceStep = 0;
         let christmasStep = 0;
@@ -374,7 +378,7 @@
             fpga3: { user: 'none', loaded: false }
         };
         
-        // Store original state before dance mode
+        // Store original state before modes
         let originalState = {};
         
         function setStatus(msg, isConnected) {
@@ -385,8 +389,9 @@
         }
         
         function connect() {
-            const server = window.location.hostname || 'localhost';
-            const port = 9001;
+            // Connect to external VerneMQ server via WebSocket
+            const server = '172.30.81.106';
+            const port = 8083;  // VerneMQ WebSocket port
             
             setStatus('Connecting...', false);
             
@@ -408,6 +413,7 @@
                 
                 client.on('error', function(error) {
                     setStatus('Connection failed', false);
+                    console.error('MQTT connection error:', error);
                 });
                 
                 client.on('close', function() {
@@ -438,6 +444,7 @@
                 
             } catch (error) {
                 setStatus('Connection error: ' + error.message, false);
+                console.error('MQTT setup error:', error);
             }
         }
         
@@ -458,7 +465,7 @@
                     userLed.className = 'led off';
                 }
                 
-                // Loaded LED - now orange instead of green
+                // Loaded LED - orange color
                 const loadedLed = document.getElementById(`${fpga}-loaded`);
                 loadedLed.className = `led ${s.loaded ? 'orange' : 'off'}`;
             }
@@ -520,8 +527,8 @@
                     fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
                 };
                 
-                // Start dance sequence - much faster at 300ms intervals
-                danceInterval = setInterval(danceSequence, 200);
+                // Start dance sequence - fast at 300ms intervals
+                danceInterval = setInterval(danceSequence, 300);
                 danceSequence(); // Run first step immediately
             }
         }
@@ -682,7 +689,6 @@
                 if (christmasMode) {
                     christmasMode = false;
                     clearInterval(christmasInterval);
-                    clearInterval(loadedPulseInterval);
                     christmasButton.classList.remove('christmas-active');
                 }
                 
@@ -708,7 +714,6 @@
             
             const fpgas = ['fpga1', 'fpga2', 'fpga3'];
             const userOptions = ['none', 'dan', 'blake', 'ben'];
-            const loadedOptions = [true, false];
             
             // Turn off all LEDs first
             for (let i = 0; i < 3; i++) {
@@ -716,19 +721,17 @@
                 client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
             }
             
-            // Create array of all 16 possible combinations
+            // Create array of all possible combinations
             const allCombinations = [];
             
-            // Add user LED combinations (4 options × 3 FPGAs = 12 combinations)
+            // Add user LED combinations (3 colors × 3 FPGAs = 9 combinations)
             for (let fpga = 0; fpga < 3; fpga++) {
-                for (let user = 0; user < 4; user++) {
-                    if (userOptions[user] !== 'none') { // Skip 'none' for user LEDs
-                        allCombinations.push({
-                            type: 'user',
-                            fpga: fpga,
-                            value: userOptions[user]
-                        });
-                    }
+                for (let user = 1; user < 4; user++) { // Skip 'none'
+                    allCombinations.push({
+                        type: 'user',
+                        fpga: fpga,
+                        value: userOptions[user]
+                    });
                 }
             }
             
