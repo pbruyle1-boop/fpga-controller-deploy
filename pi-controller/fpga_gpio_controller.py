@@ -3,6 +3,7 @@
 FPGA GPIO Controller - High-Side UDN2981A with RGB LEDs
 Controls 9 RGB pins (3 per FPGA: Red, Green, Blue) + 3 Loaded pins
 HIGH-SIDE LOGIC: GPIO HIGH = LED ON, GPIO LOW = LED OFF
+Connects to external VerneMQ broker at 172.30.81.106
 """
 
 import paho.mqtt.client as mqtt
@@ -24,6 +25,11 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# MQTT Configuration for external VerneMQ server
+MQTT_BROKER = "172.30.81.106"    # External VerneMQ server IP
+MQTT_PORT = 1883                 # Standard MQTT port
+MQTT_WEBSOCKET_PORT = 8083       # VerneMQ WebSocket port for web interface
 
 # GPIO Pin Assignments - RGB LEDs (3 pins per FPGA) + Loaded LEDs
 GPIO_PINS = {
@@ -67,7 +73,7 @@ def get_ip_address():
             s.connect(("8.8.8.8", 80))
             return s.getsockname()[0]
     except:
-        return "localhost"
+        return "172.30.81.82"
 
 class FPGAController:
     def __init__(self):
@@ -119,16 +125,23 @@ class FPGAController:
         logger.info("GPIO setup complete - all LEDs OFF")
     
     def setup_mqtt(self):
-        """Setup MQTT client"""
+        """Setup MQTT client for external VerneMQ"""
         self.mqtt_client = mqtt.Client()
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_message = self.on_message
-        self.mqtt_client.connect("localhost", 1883, 60)
+        
+        logger.info(f"Connecting to VerneMQ broker at {MQTT_BROKER}:{MQTT_PORT}")
+        try:
+            self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        except Exception as e:
+            logger.error(f"Failed to connect to MQTT broker: {e}")
+            logger.info("Make sure VerneMQ is running at 172.30.81.106 and accessible")
+            raise
     
     def on_connect(self, client, userdata, flags, rc):
         """MQTT connect callback"""
         if rc == 0:
-            logger.info("Connected to MQTT broker")
+            logger.info("Connected to external VerneMQ broker")
             
             # Subscribe to command topics
             topics = []
@@ -263,6 +276,8 @@ class FPGAController:
         logger.info("FPGA GPIO Controller - High-Side UDN2981A with RGB LEDs")
         logger.info(f"Hostname: {hostname}")
         logger.info(f"IP Address: {ip_address}")
+        logger.info(f"MQTT Broker: {MQTT_BROKER}:{MQTT_PORT}")
+        logger.info(f"WebSocket Port: {MQTT_WEBSOCKET_PORT} (for web interface)")
         logger.info("GPIO Pin Assignments:")
         for fpga_id, pins in GPIO_PINS.items():
             pin_list = ", ".join([f"{led.upper()}={pin}" for led, pin in pins.items()])
@@ -276,7 +291,7 @@ class FPGAController:
         self.running = True
         self.mqtt_client.loop_start()
         
-        logger.info("Controller ready! Listening for commands...")
+        logger.info("Controller ready! Listening for VerneMQ commands...")
         
         try:
             while self.running:
