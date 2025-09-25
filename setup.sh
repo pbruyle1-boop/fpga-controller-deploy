@@ -115,41 +115,21 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Configure static IP
-echo "🌐 Configuring static IP..."
-sudo tee /etc/dhcpcd.conf > /dev/null <<EOF
-# DHCP Client Configuration for FPGA Controller
-# Static IP configuration for eth0
+# Configure static IP using NetworkManager
+echo "🌐 Configuring static IP with NetworkManager..."
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 172.30.81.82/24 2>/dev/null || \
+sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.addresses 172.30.81.82/24
 
-# Allow users of this group to interact with dhcpcd via the control socket.
-hostname
+sudo nmcli con mod "Wired connection 1" ipv4.gateway 172.30.81.1 2>/dev/null || \
+sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.gateway 172.30.81.1
 
-# Use the hardware address of the interface for the Client ID.
-clientid
+sudo nmcli con mod "Wired connection 1" ipv4.dns 8.8.8.8 2>/dev/null || \
+sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.dns 8.8.8.8
 
-# Persist interface configuration when dhcpcd exits.
-persistent
+sudo nmcli con mod "Wired connection 1" ipv4.method manual 2>/dev/null || \
+sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.method manual
 
-# Rapid commit support.
-option rapid_commit
-
-# A list of options to request from the DHCP server.
-option domain_name_servers, domain_name, domain_search, host_name
-option classless_static_routes
-option interface_mtu
-
-# A ServerID is required by RFC2131.
-require dhcp_server_identifier
-
-# Generate SLAAC address using the hardware address of the interface
-slaac hwaddr
-
-# Static IP configuration for eth0 interface
-interface eth0
-static ip_address=172.30.81.82/24
-static routers=172.30.81.1
-static domain_name_servers=8.8.8.8 8.8.4.4
-EOF
+echo "✅ Static IP configured via NetworkManager"
 
 # Enable and start services
 echo "🚀 Starting services..."
@@ -218,11 +198,13 @@ echo "  ✅ Local MQTT Library: Downloaded"
 echo "  ✅ All services configured"
 echo ""
 echo "Run './get-pi-info.sh' to see connection details"
-echo "Network restart recommended: sudo systemctl restart dhcpcd"
+echo "Network restart recommended to apply static IP: sudo nmcli con up \"Wired connection 1\""
 echo ""
-read -p "Restart networking now? (y/N): " -n 1 -r
+read -p "Apply network changes now? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    sudo systemctl restart dhcpcd
-    echo "Network restarted. IP should now be 172.30.81.82"
+    sudo nmcli con up "Wired connection 1" 2>/dev/null || \
+    sudo nmcli con up "$(nmcli -t -f NAME con show | head -n1)" 2>/dev/null
+    echo "Network changes applied. IP should now be 172.30.81.82"
+    echo "Run 'ip addr show eth0' to verify"
 fi
