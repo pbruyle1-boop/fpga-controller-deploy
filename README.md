@@ -75,7 +75,6 @@ sudo journalctl -u fpga-controller
 ### Web Interface Won't Connect
 1. Check Pi IP: `./get-pi-info.sh`
 2. Verify services: `sudo systemctl status fpga-webserver mosquitto`
-3. Test MQTT: `mosquitto_pub -h localhost -t test -m hello`
 
 ### GPIO Not Responding
 1. Verify pinctrl: `sudo pinctrl get 18`
