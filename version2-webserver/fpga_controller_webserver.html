@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPGA Controller</title>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FPGA Controller</title>
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -231,136 +232,129 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>FPGA Controller</h1>
-        
-        <div class="connection-info">
-            <h3>MQTT Connection</h3>
-            <p>Automatically connects to MQTT broker for real-time LED control.</p>
-        </div>
-        
-        <div id="status" class="status disconnected">
+<div class="container">
+<h1>FPGA Controller</h1>
+<div class="connection-info">
+<h3>MQTT Connection</h3>
+<p>Automatically connects to MQTT broker for real-time LED control.</p>
+</div>
+<div class="status disconnected" id="status">
             Connecting...
         </div>
-        
-        <div class="fpga-grid">
-            <!-- FPGA 1 -->
-            <div class="fpga-card">
-                <div class="fpga-title">FPGA 1</div>
-                <div class="leds">
-                    <div class="led-col">
-                        <div class="led-name">User</div>
-                        <div class="led off" id="fpga1-user"></div>
-                    </div>
-                    <div class="led-col">
-                        <div class="led-name">Loaded</div>
-                        <div class="led off" id="fpga1-loaded"></div>
-                    </div>
-                </div>
-                <div class="controls">
-                    <div class="control-row">
-                        <div>
-                            <label>User</label>
-                            <select id="fpga1-user-sel">
-                                <option value="none">None</option>
-                                <option value="dan">Dan</option>
-                                <option value="blake">Blake</option>
-                                <option value="ben">Ben</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Loaded</label>
-                            <select id="fpga1-loaded-sel">
-                                <option value="false">Off</option>
-                                <option value="true">Loaded</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="update(1)">Update</button>
-                </div>
-            </div>
-            
-            <!-- FPGA 2 -->
-            <div class="fpga-card">
-                <div class="fpga-title">FPGA 2</div>
-                <div class="leds">
-                    <div class="led-col">
-                        <div class="led-name">User</div>
-                        <div class="led off" id="fpga2-user"></div>
-                    </div>
-                    <div class="led-col">
-                        <div class="led-name">Loaded</div>
-                        <div class="led off" id="fpga2-loaded"></div>
-                    </div>
-                </div>
-                <div class="controls">
-                    <div class="control-row">
-                        <div>
-                            <label>User</label>
-                            <select id="fpga2-user-sel">
-                                <option value="none">None</option>
-                                <option value="dan">Dan</option>
-                                <option value="blake">Blake</option>
-                                <option value="ben">Ben</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Loaded</label>
-                            <select id="fpga2-loaded-sel">
-                                <option value="false">Off</option>
-                                <option value="true">Loaded</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="update(2)">Update</button>
-                </div>
-            </div>
-            
-            <!-- FPGA 3 -->
-            <div class="fpga-card">
-                <div class="fpga-title">FPGA 3</div>
-                <div class="leds">
-                    <div class="led-col">
-                        <div class="led-name">User</div>
-                        <div class="led off" id="fpga3-user"></div>
-                    </div>
-                    <div class="led-col">
-                        <div class="led-name">Loaded</div>
-                        <div class="led off" id="fpga3-loaded"></div>
-                    </div>
-                </div>
-                <div class="controls">
-                    <div class="control-row">
-                        <div>
-                            <label>User</label>
-                            <select id="fpga3-user-sel">
-                                <option value="none">None</option>
-                                <option value="dan">Dan</option>
-                                <option value="blake">Blake</option>
-                                <option value="ben">Ben</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Loaded</label>
-                            <select id="fpga3-loaded-sel">
-                                <option value="false">Off</option>
-                                <option value="true">Loaded</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="update(3)">Update</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hidden mode buttons -->
-    <button class="dance-button" onclick="toggleDanceMode()" title="Dance Mode">♪</button>
-    <button class="christmas-button" onclick="toggleChristmasMode()" title="Christmas Mode">🎄</button>
-    <button class="random-button" onclick="toggleRandomMode()" title="Random Mode">🎲</button>
-
-    <script src="mqtt.min.js"></script>
-    <script>
+<div class="fpga-grid">
+<!-- FPGA 1 -->
+<div class="fpga-card">
+<div class="fpga-title">FPGA 1</div>
+<div class="leds">
+<div class="led-col">
+<div class="led-name">User</div>
+<div class="led off" id="fpga1-user"></div>
+</div>
+<div class="led-col">
+<div class="led-name">Loaded</div>
+<div class="led off" id="fpga1-loaded"></div>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<div>
+<label>User</label>
+<select id="fpga1-user-sel">
+<option value="none">None</option>
+<option value="dan">Dan</option>
+<option value="blake">Blake</option>
+<option value="ben">Ben</option>
+</select>
+</div>
+<div>
+<label>Loaded</label>
+<select id="fpga1-loaded-sel">
+<option value="false">Off</option>
+<option value="true">Loaded</option>
+</select>
+</div>
+</div>
+<button onclick="update(1)">Update</button>
+</div>
+</div>
+<!-- FPGA 2 -->
+<div class="fpga-card">
+<div class="fpga-title">FPGA 2</div>
+<div class="leds">
+<div class="led-col">
+<div class="led-name">User</div>
+<div class="led off" id="fpga2-user"></div>
+</div>
+<div class="led-col">
+<div class="led-name">Loaded</div>
+<div class="led off" id="fpga2-loaded"></div>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<div>
+<label>User</label>
+<select id="fpga2-user-sel">
+<option value="none">None</option>
+<option value="dan">Dan</option>
+<option value="blake">Blake</option>
+<option value="ben">Ben</option>
+</select>
+</div>
+<div>
+<label>Loaded</label>
+<select id="fpga2-loaded-sel">
+<option value="false">Off</option>
+<option value="true">Loaded</option>
+</select>
+</div>
+</div>
+<button onclick="update(2)">Update</button>
+</div>
+</div>
+<!-- FPGA 3 -->
+<div class="fpga-card">
+<div class="fpga-title">FPGA 3</div>
+<div class="leds">
+<div class="led-col">
+<div class="led-name">User</div>
+<div class="led off" id="fpga3-user"></div>
+</div>
+<div class="led-col">
+<div class="led-name">Loaded</div>
+<div class="led off" id="fpga3-loaded"></div>
+</div>
+</div>
+<div class="controls">
+<div class="control-row">
+<div>
+<label>User</label>
+<select id="fpga3-user-sel">
+<option value="none">None</option>
+<option value="dan">Dan</option>
+<option value="blake">Blake</option>
+<option value="ben">Ben</option>
+</select>
+</div>
+<div>
+<label>Loaded</label>
+<select id="fpga3-loaded-sel">
+<option value="false">Off</option>
+<option value="true">Loaded</option>
+</select>
+</div>
+</div>
+<button onclick="update(3)">Update</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Hidden mode buttons -->
+<button class="dance-button" onclick="toggleDanceMode()" title="Dance Mode">♪</button>
+<button class="christmas-button" onclick="toggleChristmasMode()" title="Christmas Mode">🎄</button>
+<button class="random-button" onclick="toggleRandomMode()" title="Random Mode">🎲</button>
+<script src="mqtt.min.js"></script><script src="mqtt.min.js"></script>
+<script>
         let client = null;
         let connected = false;
         let danceMode = false;
@@ -790,3 +784,4 @@
     </script>
 </body>
 </html>
+
