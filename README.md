@@ -20,14 +20,6 @@ After setup, get connection info:
 ./get-pi-info.sh
 ```
 
-### Versions
-
-#### Version 1: Standalone HTML
-- **File**: `version1-standalone/fpga_controller_standalone.html`
-
-#### Version 2: Web Server
-- **File**: `version2-webserver/fpga_controller_webserver.html`
-
 ### New Pi Setup
 ```bash
 git clone <repo>
@@ -40,7 +32,6 @@ cd fpga-controller-deploy
 cd fpga-controller-deploy
 ./setup.sh  # Same script handles reset
 ```
-## Access Methods
 
 ### Find Pi Information
 ```bash
@@ -50,7 +41,6 @@ cd fpga-controller-deploy
 ### Web Interface Access
 - **Direct IP**: `http://(pi-ip):8080/` (replace with actual IP)
 - **mDNS**: `http://fpga-controller.local:8080/`
-- **Standalone**: Local HTML file
   
 ## Management
 
@@ -112,13 +102,11 @@ Re-run setup after network changes:
 fpga-controller-deploy/
 ├── setup.sh                           # Master setup script
 ├── get-pi-info.sh                     # System information
-├── version1-standalone/
-│   ├── fpga_controller_standalone.html
 ├── version2-webserver/
 │   ├── fpga_controller_webserver.html
 │   ├── start_webserver.py
 ├── pi-controller/
 │   ├── fpga_gpio_controller.py
 │   └── config/
-└── README.md                          # This file
+└── README.md                         
 ```
