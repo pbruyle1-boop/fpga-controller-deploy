@@ -64,14 +64,6 @@ sudo pinctrl set 18 dh  # Turn on FPGA1 User LED
 sudo pinctrl set 18 dl  # Turn off FPGA1 User LED
 ```
 
-### MQTT Test
-```bash
-# Turn on Dan's indicator on FPGA1
-mosquitto_pub -h localhost -t 'fpga/command/fpga1/user' -m 'dan'
-
-# Turn on loaded indicator
-mosquitto_pub -h localhost -t 'fpga/command/fpga1/loaded' -m 'true'
-```
 ## Troubleshooting
 
 ### Services Won't Start
