@@ -5,26 +5,26 @@
 set -e
 
 echo "================================================"
-echo "FPGA Controller - Complete Setup/Reset"
+echo "FPGA Controller - Setup/Reset"
 echo "================================================"
 
 # Check if running as root
 if [ "$EUID" -eq 0 ]; then
-  echo "❌ Don't run this script as root! Run as regular user (pi)"
+  echo " Don't run this script as root! Run as regular user (pi)"
   exit 1
 fi
 
 # Set hostname
-echo "🏷️  Setting hostname to fpga-controller..."
+echo " Setting hostname to fpga-controller..."
 echo "fpga-controller" | sudo tee /etc/hostname > /dev/null
 sudo sed -i 's/127.0.1.1.*/127.0.1.1\tfpga-controller/' /etc/hosts
 
 # Update system
-echo "📦 Updating system..."
+echo " Updating system..."
 sudo apt update && sudo apt upgrade -y
 
 # Install required packages
-echo "📦 Installing packages..."
+echo "Installing packages..."
 sudo apt install -y python3 python3-pip python3-paho-mqtt git avahi-daemon wget
 
 # Enable mDNS discovery
@@ -32,12 +32,12 @@ sudo systemctl enable avahi-daemon
 sudo systemctl start avahi-daemon
 
 # Stop and disable local Mosquitto (using external VerneMQ)
-echo "⚙️  Disabling local Mosquitto (using external VerneMQ)..."
+echo " Disabling local Mosquitto (using external VerneMQ)..."
 sudo systemctl stop mosquitto 2>/dev/null || true
 sudo systemctl disable mosquitto 2>/dev/null || true
 
 # Setup project directory
-echo "📁 Setting up project..."
+echo " Setting up project..."
 mkdir -p ~/fpga_controller
 cd ~/fpga_controller
 
@@ -52,28 +52,6 @@ elif [ -f "pi-controller/fpga_gpio_controller.py" ]; then
     cp version2-webserver/start_webserver.py .
     cp version2-webserver/fpga_controller_webserver.html ./fpga_controller.html
     chmod +x fpga_gpio_controller.py start_webserver.py
-else
-    echo "⚠️  Controller files not found. Please run from deployment directory."
-    exit 1
-fi
-
-# Download MQTT library locally to avoid CDN issues
-echo "📦 Downloading MQTT JavaScript library..."
-wget -q https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js -O mqtt.min.js
-if [ $? -ne 0 ]; then
-    echo "⚠️  Primary CDN failed, trying alternative..."
-    wget -q https://unpkg.com/mqtt/dist/mqtt.min.js -O mqtt.min.js
-    if [ $? -ne 0 ]; then
-        echo "❌ MQTT library download failed. Internet connection required."
-        exit 1
-    fi
-fi
-
-# Verify MQTT library downloaded
-if [ -f "mqtt.min.js" ] && [ -s "mqtt.min.js" ]; then
-    echo "✅ MQTT library downloaded successfully"
-else
-    echo "❌ MQTT library download verification failed"
     exit 1
 fi
 
@@ -116,7 +94,7 @@ WantedBy=multi-user.target
 EOF
 
 # Configure static IP using NetworkManager
-echo "🌐 Configuring static IP with NetworkManager..."
+echo " Configuring static IP with"
 sudo nmcli con mod "Wired connection 1" ipv4.addresses 172.30.81.82/24 2>/dev/null || \
 sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.addresses 172.30.81.82/24
 
@@ -129,10 +107,10 @@ sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.dns 8.8.8.8
 sudo nmcli con mod "Wired connection 1" ipv4.method manual 2>/dev/null || \
 sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.method manual
 
-echo "✅ Static IP configured via NetworkManager"
+echo "Static IP configured"
 
 # Enable and start services
-echo "🚀 Starting services..."
+echo "Starting services..."
 sudo systemctl daemon-reload
 sudo systemctl enable fpga-controller fpga-webserver
 sudo systemctl start fpga-controller
@@ -140,16 +118,16 @@ sleep 2
 sudo systemctl start fpga-webserver
 
 # Test GPIO
-echo "🧪 Testing GPIO..."
+echo "Testing GPIO..."
 if command -v pinctrl &> /dev/null; then
     for pin in 18 19 20 21 22 23 24 25 26 27 2 3; do
         sudo pinctrl set $pin op
         sudo pinctrl set $pin dh
         sudo pinctrl set $pin dl
     done
-    echo "✅ GPIO test complete"
+    echo "GPIO test complete"
 else
-    echo "⚠️  pinctrl not available"
+    echo " pinctrl not available"
 fi
 
 # Create info script
@@ -169,8 +147,8 @@ echo "  External VerneMQ Broker: 172.30.81.106:1883"
 echo "  WebSocket Port: 8083"
 echo ""
 echo "Service Status:"
-systemctl is-active fpga-controller && echo "  ✅ GPIO Controller: Running" || echo "  ❌ GPIO Controller: Stopped"  
-systemctl is-active fpga-webserver && echo "  ✅ Web Server: Running" || echo "  ❌ Web Server: Stopped"
+systemctl is-active fpga-controller && echo "  GPIO Controller: Running" || echo "   GPIO Controller: Stopped"  
+systemctl is-active fpga-webserver && echo "  Web Server: Running" || echo "   Web Server: Stopped"
 echo ""
 echo "GPIO Pin Assignments:"
 echo "  FPGA1: R=18, G=19, B=20, Loaded=27"
@@ -184,18 +162,17 @@ chmod +x ~/get-pi-info.sh
 sleep 5
 
 # Check service status
-echo "📊 Checking services..."
+echo " Checking services..."
 sudo systemctl status fpga-controller --no-pager -l
 sudo systemctl status fpga-webserver --no-pager -l
 
 echo ""
-echo "🎉 Setup complete!"
+echo " Setup complete!"
 echo ""
 echo "Configuration Summary:"
-echo "  ✅ Static IP: 172.30.81.82"
-echo "  ✅ External VerneMQ: 172.30.81.106:1883"
-echo "  ✅ Local MQTT Library: Downloaded"
-echo "  ✅ All services configured"
+echo "  Static IP: 172.30.81.82"
+echo "  Serving at: 172.30.81.106:1883"
+echo "  All services configured"
 echo ""
 echo "Run './get-pi-info.sh' to see connection details"
 echo "Network restart recommended to apply static IP: sudo nmcli con up \"Wired connection 1\""
