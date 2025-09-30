@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -18,43 +17,159 @@
         .container {
             max-width: 1000px;
             margin: 0 auto;
+        }
+        
+        .header {
             background: #2d2d2d;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
         }
         
         h1 {
-            text-align: center;
             color: #ffffff;
-            margin-bottom: 30px;
             font-size: 24px;
             font-weight: 600;
         }
         
         .status {
-            text-align: center;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 13px;
             font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
-        .connected { background: #1a4a1a; color: #4ade80; }
-        .disconnected { background: #4a1a1a; color: #f87171; }
+        .status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .connected { 
+            background: rgba(74, 222, 128, 0.15); 
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        
+        .connected::before {
+            background: #4ade80;
+        }
+        
+        .disconnected { 
+            background: rgba(248, 113, 113, 0.15); 
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+        
+        .disconnected::before {
+            background: #f87171;
+        }
+        
+        .mode-controls {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .mode-controls h3 {
+            font-size: 14px;
+            color: #b5b5b5;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .mode-button {
+            padding: 12px 20px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            background: #3a3a3a;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .mode-button:hover {
+            background: #444;
+            border-color: #666;
+        }
+        
+        .mode-button.dance-button {
+            border-color: #ff6b6b;
+        }
+        
+        .mode-button.dance-button:hover,
+        .mode-button.dance-active {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+        
+        .mode-button.christmas-button {
+            border-color: #228B22;
+        }
+        
+        .mode-button.christmas-button:hover,
+        .mode-button.christmas-active {
+            background: #228B22;
+            border-color: #228B22;
+        }
+        
+        .mode-button.random-button {
+            border-color: #9370DB;
+        }
+        
+        .mode-button.random-button:hover,
+        .mode-button.random-active {
+            background: #9370DB;
+            border-color: #9370DB;
+        }
+        
+        .mode-button.halloween-button {
+            border-color: #FF8C00;
+        }
+        
+        .mode-button.halloween-button:hover,
+        .mode-button.halloween-active {
+            background: #FF8C00;
+            border-color: #FF8C00;
+        }
         
         .fpga-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
         }
         
         .fpga-card {
-            background: #3a3a3a;
+            background: #2d2d2d;
             border: 1px solid #555;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         
         .fpga-title {
@@ -124,8 +239,7 @@
         
         select:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+            border-color: #777;
         }
         
         button {
@@ -137,233 +251,162 @@
             margin-top: 8px;
         }
         
-        button:hover { background: #1e7e34; }
-        
-        .connection-info {
-            background: #333;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .connection-info h3 {
-            color: #4ade80;
-            margin-bottom: 10px;
-        }
-        
-        .dance-button {
-            position: fixed;
-            bottom: 10px;
-            right: 70px;
-            width: 20px;
-            height: 20px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 3px;
-            font-size: 10px;
-            padding: 0;
-            cursor: pointer;
-            opacity: 0.3;
-            transition: all 0.2s;
-        }
-        
-        .christmas-button {
-            position: fixed;
-            bottom: 10px;
-            right: 40px;
-            width: 20px;
-            height: 20px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 3px;
-            font-size: 10px;
-            padding: 0;
-            cursor: pointer;
-            opacity: 0.3;
-            transition: all 0.2s;
-        }
-        
-        .random-button {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            width: 20px;
-            height: 20px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 3px;
-            font-size: 10px;
-            padding: 0;
-            cursor: pointer;
-            opacity: 0.3;
-            transition: all 0.2s;
-        }
-        
-        .dance-button:hover {
-            opacity: 1;
-            background: #ff6b6b;
-        }
-        
-        .christmas-button:hover {
-            opacity: 1;
-            background: #228B22;
-        }
-        
-        .random-button:hover {
-            opacity: 1;
-            background: #9370DB;
-        }
-        
-        .dance-active {
-            background: #ff6b6b !important;
-            opacity: 1 !important;
-        }
-        
-        .christmas-active {
-            background: #228B22 !important;
-            opacity: 1 !important;
-        }
-        
-        .random-active {
-            background: #9370DB !important;
-            opacity: 1 !important;
+        button:hover { 
+            background: #1e7e34;
         }
     </style>
 </head>
 <body>
 <div class="container">
-<h1>FPGA Controller</h1>
-<div class="connection-info">
-<h3>MQTT Connection</h3>
-</div>
-<div class="status disconnected" id="status">
-            Connecting...
+    <div class="header">
+        <h1>FPGA Controller</h1>
+        <div class="status disconnected" id="status">Connecting...</div>
+    </div>
+    
+    <div class="fpga-grid">
+        <!-- FPGA 1 -->
+        <div class="fpga-card">
+            <div class="fpga-title">FPGA 1</div>
+            <div class="leds">
+                <div class="led-col">
+                    <div class="led-name">User</div>
+                    <div class="led off" id="fpga1-user"></div>
+                </div>
+                <div class="led-col">
+                    <div class="led-name">Loaded</div>
+                    <div class="led off" id="fpga1-loaded"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="control-row">
+                    <div>
+                        <label>User</label>
+                        <select id="fpga1-user-sel">
+                            <option value="none">None</option>
+                            <option value="dan">Dan</option>
+                            <option value="blake">Blake</option>
+                            <option value="ben">Ben</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Loaded</label>
+                        <select id="fpga1-loaded-sel">
+                            <option value="false">Off</option>
+                            <option value="true">Loaded</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="update(1)">Update</button>
+            </div>
         </div>
-<div class="fpga-grid">
-<!-- FPGA 1 -->
-<div class="fpga-card">
-<div class="fpga-title">FPGA 1</div>
-<div class="leds">
-<div class="led-col">
-<div class="led-name">User</div>
-<div class="led off" id="fpga1-user"></div>
+        
+        <!-- FPGA 2 -->
+        <div class="fpga-card">
+            <div class="fpga-title">FPGA 2</div>
+            <div class="leds">
+                <div class="led-col">
+                    <div class="led-name">User</div>
+                    <div class="led off" id="fpga2-user"></div>
+                </div>
+                <div class="led-col">
+                    <div class="led-name">Loaded</div>
+                    <div class="led off" id="fpga2-loaded"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="control-row">
+                    <div>
+                        <label>User</label>
+                        <select id="fpga2-user-sel">
+                            <option value="none">None</option>
+                            <option value="dan">Dan</option>
+                            <option value="blake">Blake</option>
+                            <option value="ben">Ben</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Loaded</label>
+                        <select id="fpga2-loaded-sel">
+                            <option value="false">Off</option>
+                            <option value="true">Loaded</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="update(2)">Update</button>
+            </div>
+        </div>
+        
+        <!-- FPGA 3 -->
+        <div class="fpga-card">
+            <div class="fpga-title">FPGA 3</div>
+            <div class="leds">
+                <div class="led-col">
+                    <div class="led-name">User</div>
+                    <div class="led off" id="fpga3-user"></div>
+                </div>
+                <div class="led-col">
+                    <div class="led-name">Loaded</div>
+                    <div class="led off" id="fpga3-loaded"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="control-row">
+                    <div>
+                        <label>User</label>
+                        <select id="fpga3-user-sel">
+                            <option value="none">None</option>
+                            <option value="dan">Dan</option>
+                            <option value="blake">Blake</option>
+                            <option value="ben">Ben</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Loaded</label>
+                        <select id="fpga3-loaded-sel">
+                            <option value="false">Off</option>
+                            <option value="true">Loaded</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="update(3)">Update</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mode-controls">
+        <h3>Modes</h3>
+        <div class="mode-buttons">
+            <button class="mode-button dance-button" onclick="toggleDanceMode()">
+                <span>♪</span> Dance Mode
+            </button>
+            <button class="mode-button christmas-button" onclick="toggleChristmasMode()">
+                <span>🎄</span> Christmas
+            </button>
+            <button class="mode-button random-button" onclick="toggleRandomMode()">
+                <span>🎲</span> Random
+            </button>
+            <button class="mode-button halloween-button" onclick="toggleHalloweenMode()">
+                <span>🎃</span> Halloween
+            </button>
+        </div>
+    </div>
 </div>
-<div class="led-col">
-<div class="led-name">Loaded</div>
-<div class="led off" id="fpga1-loaded"></div>
-</div>
-</div>
-<div class="controls">
-<div class="control-row">
-<div>
-<label>User</label>
-<select id="fpga1-user-sel">
-<option value="none">None</option>
-<option value="dan">Dan</option>
-<option value="blake">Blake</option>
-<option value="ben">Ben</option>
-</select>
-</div>
-<div>
-<label>Loaded</label>
-<select id="fpga1-loaded-sel">
-<option value="false">Off</option>
-<option value="true">Loaded</option>
-</select>
-</div>
-</div>
-<button onclick="update(1)">Update</button>
-</div>
-</div>
-<!-- FPGA 2 -->
-<div class="fpga-card">
-<div class="fpga-title">FPGA 2</div>
-<div class="leds">
-<div class="led-col">
-<div class="led-name">User</div>
-<div class="led off" id="fpga2-user"></div>
-</div>
-<div class="led-col">
-<div class="led-name">Loaded</div>
-<div class="led off" id="fpga2-loaded"></div>
-</div>
-</div>
-<div class="controls">
-<div class="control-row">
-<div>
-<label>User</label>
-<select id="fpga2-user-sel">
-<option value="none">None</option>
-<option value="dan">Dan</option>
-<option value="blake">Blake</option>
-<option value="ben">Ben</option>
-</select>
-</div>
-<div>
-<label>Loaded</label>
-<select id="fpga2-loaded-sel">
-<option value="false">Off</option>
-<option value="true">Loaded</option>
-</select>
-</div>
-</div>
-<button onclick="update(2)">Update</button>
-</div>
-</div>
-<!-- FPGA 3 -->
-<div class="fpga-card">
-<div class="fpga-title">FPGA 3</div>
-<div class="leds">
-<div class="led-col">
-<div class="led-name">User</div>
-<div class="led off" id="fpga3-user"></div>
-</div>
-<div class="led-col">
-<div class="led-name">Loaded</div>
-<div class="led off" id="fpga3-loaded"></div>
-</div>
-</div>
-<div class="controls">
-<div class="control-row">
-<div>
-<label>User</label>
-<select id="fpga3-user-sel">
-<option value="none">None</option>
-<option value="dan">Dan</option>
-<option value="blake">Blake</option>
-<option value="ben">Ben</option>
-</select>
-</div>
-<div>
-<label>Loaded</label>
-<select id="fpga3-loaded-sel">
-<option value="false">Off</option>
-<option value="true">Loaded</option>
-</select>
-</div>
-</div>
-<button onclick="update(3)">Update</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Hidden mode buttons -->
-<button class="dance-button" onclick="toggleDanceMode()" title="Dance Mode">♪</button>
-<button class="christmas-button" onclick="toggleChristmasMode()" title="Christmas Mode">🎄</button>
-<button class="random-button" onclick="toggleRandomMode()" title="Random Mode">🎲</button>
-<script src="mqtt.min.js"></script><script src="mqtt.min.js"></script>
+
+<script src="mqtt.min.js"></script>
 <script>
         let client = null;
         let connected = false;
         let danceMode = false;
         let christmasMode = false;
         let randomMode = false;
+        let halloweenMode = false;
         let danceInterval = null;
         let christmasInterval = null;
         let randomInterval = null;
+        let halloweenInterval = null;
         let danceStep = 0;
         let christmasStep = 0;
+        let halloweenStep = 0;
         
         let state = {
             fpga1: { user: 'none', loaded: false },
@@ -371,7 +414,6 @@
             fpga3: { user: 'none', loaded: false }
         };
         
-        // Store original state before modes
         let originalState = {};
         
         function setStatus(msg, isConnected) {
@@ -382,9 +424,8 @@
         }
         
         function connect() {
-            // Connect to external VerneMQ server via WebSocket
             const server = '172.30.81.106';
-            const port = 8083;  // VerneMQ WebSocket port
+            const port = 8083;
             
             setStatus('Connecting...', false);
             
@@ -395,7 +436,6 @@
                 client.on('connect', function() {
                     setStatus('Connected', true);
                     
-                    // Subscribe to status updates
                     for (let i = 1; i <= 3; i++) {
                         client.subscribe(`fpga/status/fpga${i}/user`);
                         client.subscribe(`fpga/status/fpga${i}/loaded`);
@@ -446,7 +486,6 @@
                 const fpga = `fpga${i}`;
                 const s = state[fpga];
                 
-                // User LED
                 const userLed = document.getElementById(`${fpga}-user`);
                 if (s.user === 'dan') {
                     userLed.className = 'led red';
@@ -458,7 +497,6 @@
                     userLed.className = 'led off';
                 }
                 
-                // Loaded LED - orange color
                 const loadedLed = document.getElementById(`${fpga}-loaded`);
                 loadedLed.className = `led ${s.loaded ? 'orange' : 'off'}`;
             }
@@ -475,7 +513,7 @@
         }
         
         function update(num) {
-            if (!connected || !client || danceMode || christmasMode || randomMode) {
+            if (!connected || !client || danceMode || christmasMode || randomMode || halloweenMode) {
                 return;
             }
             
@@ -494,57 +532,77 @@
             }
             
             const button = document.querySelector('.dance-button');
+            const christmasButton = document.querySelector('.christmas-button');
+            const randomButton = document.querySelector('.random-button');
+            const halloweenButton = document.querySelector('.halloween-button');
             
             if (danceMode) {
-                // Stop dance mode
                 danceMode = false;
                 clearInterval(danceInterval);
                 button.classList.remove('dance-active');
                 
-                // Restore original state
                 for (let i = 1; i <= 3; i++) {
                     const fpga = `fpga${i}`;
                     client.publish(`fpga/command/${fpga}/user`, originalState[fpga].user);
                     client.publish(`fpga/command/${fpga}/loaded`, originalState[fpga].loaded.toString());
                 }
             } else {
-                // Start dance mode
+                if (christmasMode) {
+                    christmasMode = false;
+                    clearInterval(christmasInterval);
+                    christmasButton.classList.remove('christmas-active');
+                }
+                if (halloweenMode) {
+                    halloweenMode = false;
+                    clearInterval(halloweenInterval);
+                    halloweenButton.classList.remove('halloween-active');
+                }
+                if (randomMode) {
+                    randomMode = false;
+                    clearInterval(randomInterval);
+                    randomButton.classList.remove('random-active');
+                }
+                if (halloweenMode) {
+                    halloweenMode = false;
+                    clearInterval(halloweenInterval);
+                    halloweenButton.classList.remove('halloween-active');
+                }
+                if (halloweenMode) {
+                    halloweenMode = false;
+                    clearInterval(halloweenInterval);
+                    halloweenButton.classList.remove('halloween-active');
+                }
+                
                 danceMode = true;
                 danceStep = 0;
                 button.classList.add('dance-active');
                 
-                // Store current state
                 originalState = {
                     fpga1: { user: state.fpga1.user, loaded: state.fpga1.loaded },
                     fpga2: { user: state.fpga2.user, loaded: state.fpga2.loaded },
                     fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
                 };
                 
-                // Start dance sequence - fast at 300ms intervals
                 danceInterval = setInterval(danceSequence, 300);
-                danceSequence(); // Run first step immediately
+                danceSequence();
             }
         }
         
         function danceSequence() {
             if (!danceMode || !client) return;
             
-            // Define the sequence: red (dan), green (ben), blue (blake)
             const colors = ['dan', 'ben', 'blake'];
             const fpgas = ['fpga1', 'fpga2', 'fpga3'];
             
-            // Calculate which color and which FPGA
             const colorIndex = Math.floor(danceStep / 3) % 3;
             const fpgaIndex = danceStep % 3;
             const currentColor = colors[colorIndex];
             
-            // Turn off all user and loaded LEDs first
             for (let i = 0; i < 3; i++) {
                 client.publish(`fpga/command/${fpgas[i]}/user`, 'none');
                 client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
             }
             
-            // Turn on the current FPGA with current color and loaded LED
             setTimeout(() => {
                 if (danceMode) {
                     client.publish(`fpga/command/${fpgas[fpgaIndex]}/user`, currentColor);
@@ -562,48 +620,48 @@
             
             const button = document.querySelector('.christmas-button');
             const danceButton = document.querySelector('.dance-button');
+            const randomButton = document.querySelector('.random-button');
+            const halloweenButton = document.querySelector('.halloween-button');
             
             if (christmasMode) {
-                // Stop Christmas mode
                 christmasMode = false;
                 clearInterval(christmasInterval);
                 button.classList.remove('christmas-active');
                 
-                // Restore original state
                 for (let i = 1; i <= 3; i++) {
                     const fpga = `fpga${i}`;
                     client.publish(`fpga/command/${fpga}/user`, originalState[fpga].user);
                     client.publish(`fpga/command/${fpga}/loaded`, originalState[fpga].loaded.toString());
                 }
             } else {
-                // Stop dance mode if it's running
                 if (danceMode) {
                     danceMode = false;
                     clearInterval(danceInterval);
                     danceButton.classList.remove('dance-active');
                 }
+                if (randomMode) {
+                    randomMode = false;
+                    clearInterval(randomInterval);
+                    randomButton.classList.remove('random-active');
+                }
                 
-                // Start Christmas mode
                 christmasMode = true;
                 christmasStep = 0;
                 button.classList.add('christmas-active');
                 
-                // Store current state
                 originalState = {
                     fpga1: { user: state.fpga1.user, loaded: state.fpga1.loaded },
                     fpga2: { user: state.fpga2.user, loaded: state.fpga2.loaded },
                     fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
                 };
                 
-                // Turn on all loaded LEDs immediately and keep them on
                 const fpgas = ['fpga1', 'fpga2', 'fpga3'];
                 for (let i = 0; i < 3; i++) {
                     client.publish(`fpga/command/${fpgas[i]}/loaded`, 'true');
                 }
                 
-                // Start Christmas color transitions - slower, softer
                 christmasInterval = setInterval(christmasColorTransition, 2000);
-                christmasColorTransition(); // Run first step immediately
+                christmasColorTransition();
             }
         }
         
@@ -611,37 +669,35 @@
             if (!christmasMode || !client) return;
             
             const fpgas = ['fpga1', 'fpga2', 'fpga3'];
-            
-            // Cycle between all green, all red, and transitions
             const step = christmasStep % 6;
             
             switch(step) {
-                case 0: // All green
+                case 0:
                     for (let i = 0; i < 3; i++) {
                         client.publish(`fpga/command/${fpgas[i]}/user`, 'ben');
                     }
                     break;
-                case 1: // Green->Red transition: 2 green, 1 red
+                case 1:
                     client.publish(`fpga/command/fpga1/user`, 'ben');
                     client.publish(`fpga/command/fpga2/user`, 'ben');
                     client.publish(`fpga/command/fpga3/user`, 'dan');
                     break;
-                case 2: // Green->Red transition: 1 green, 2 red
+                case 2:
                     client.publish(`fpga/command/fpga1/user`, 'ben');
                     client.publish(`fpga/command/fpga2/user`, 'dan');
                     client.publish(`fpga/command/fpga3/user`, 'dan');
                     break;
-                case 3: // All red
+                case 3:
                     for (let i = 0; i < 3; i++) {
                         client.publish(`fpga/command/${fpgas[i]}/user`, 'dan');
                     }
                     break;
-                case 4: // Red->Green transition: 2 red, 1 green
+                case 4:
                     client.publish(`fpga/command/fpga1/user`, 'dan');
                     client.publish(`fpga/command/fpga2/user`, 'dan');
                     client.publish(`fpga/command/fpga3/user`, 'ben');
                     break;
-                case 5: // Red->Green transition: 1 red, 2 green
+                case 5:
                     client.publish(`fpga/command/fpga1/user`, 'dan');
                     client.publish(`fpga/command/fpga2/user`, 'ben');
                     client.publish(`fpga/command/fpga3/user`, 'ben');
@@ -659,21 +715,19 @@
             const button = document.querySelector('.random-button');
             const danceButton = document.querySelector('.dance-button');
             const christmasButton = document.querySelector('.christmas-button');
+            const halloweenButton = document.querySelector('.halloween-button');
             
             if (randomMode) {
-                // Stop Random mode
                 randomMode = false;
                 clearInterval(randomInterval);
                 button.classList.remove('random-active');
                 
-                // Restore original state
                 for (let i = 1; i <= 3; i++) {
                     const fpga = `fpga${i}`;
                     client.publish(`fpga/command/${fpga}/user`, originalState[fpga].user);
                     client.publish(`fpga/command/${fpga}/loaded`, originalState[fpga].loaded.toString());
                 }
             } else {
-                // Stop other modes if they're running
                 if (danceMode) {
                     danceMode = false;
                     clearInterval(danceInterval);
@@ -685,20 +739,17 @@
                     christmasButton.classList.remove('christmas-active');
                 }
                 
-                // Start Random mode
                 randomMode = true;
                 button.classList.add('random-active');
                 
-                // Store current state
                 originalState = {
                     fpga1: { user: state.fpga1.user, loaded: state.fpga1.loaded },
                     fpga2: { user: state.fpga2.user, loaded: state.fpga2.loaded },
                     fpga3: { user: state.fpga3.user, loaded: state.fpga3.loaded }
                 };
                 
-                // Start random sequence - fast at 200ms
                 randomInterval = setInterval(randomSequence, 200);
-                randomSequence(); // Run first step immediately
+                randomSequence();
             }
         }
         
@@ -708,18 +759,15 @@
             const fpgas = ['fpga1', 'fpga2', 'fpga3'];
             const userOptions = ['none', 'dan', 'blake', 'ben'];
             
-            // Turn off all LEDs first
             for (let i = 0; i < 3; i++) {
                 client.publish(`fpga/command/${fpgas[i]}/user`, 'none');
                 client.publish(`fpga/command/${fpgas[i]}/loaded`, 'false');
             }
             
-            // Create array of all possible combinations
             const allCombinations = [];
             
-            // Add user LED combinations (3 colors × 3 FPGAs = 9 combinations)
             for (let fpga = 0; fpga < 3; fpga++) {
-                for (let user = 1; user < 4; user++) { // Skip 'none'
+                for (let user = 1; user < 4; user++) {
                     allCombinations.push({
                         type: 'user',
                         fpga: fpga,
@@ -728,7 +776,6 @@
                 }
             }
             
-            // Add loaded LED combinations (1 option × 3 FPGAs = 3 combinations)
             for (let fpga = 0; fpga < 3; fpga++) {
                 allCombinations.push({
                     type: 'loaded',
@@ -737,23 +784,19 @@
                 });
             }
             
-            // Add one completely off state
             allCombinations.push({
                 type: 'off',
                 fpga: null,
                 value: null
             });
             
-            // Randomly select one combination
             const randomChoice = allCombinations[Math.floor(Math.random() * allCombinations.length)];
             
-            // Apply the random choice
             if (randomChoice.type === 'user') {
                 client.publish(`fpga/command/${fpgas[randomChoice.fpga]}/user`, randomChoice.value);
             } else if (randomChoice.type === 'loaded') {
                 client.publish(`fpga/command/${fpgas[randomChoice.fpga]}/loaded`, 'true');
             }
-            // If type is 'off', everything stays off (already turned off above)
         }
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -761,14 +804,14 @@
                 const fpga = `fpga${i}`;
                 
                 document.getElementById(`${fpga}-user-sel`).addEventListener('change', function() {
-                    if (!danceMode && !christmasMode && !randomMode) {
+                    if (!danceMode && !christmasMode && !randomMode && !halloweenMode) {
                         state[fpga].user = this.value;
                         updateDisplay();
                     }
                 });
                 
                 document.getElementById(`${fpga}-loaded-sel`).addEventListener('change', function() {
-                    if (!danceMode && !christmasMode && !randomMode) {
+                    if (!danceMode && !christmasMode && !randomMode && !halloweenMode) {
                         state[fpga].loaded = this.value === 'true';
                         updateDisplay();
                     }
@@ -776,11 +819,8 @@
             }
             
             updateDisplay();
-            
-            // Auto-connect after 1 second
             setTimeout(() => connect(), 1000);
         });
     </script>
 </body>
 </html>
-
