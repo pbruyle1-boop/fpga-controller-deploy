@@ -86,18 +86,3 @@ Re-run setup after network changes:
 ```bash
 ./setup.sh
 ```
-
-## File Structure
-
-```
-fpga-controller-deploy/
-├── setup.sh                           # Master setup script
-├── get-pi-info.sh                     # System information
-├── version2-webserver/
-│   ├── fpga_controller_webserver.html
-│   ├── start_webserver.py
-├── pi-controller/
-│   ├── fpga_gpio_controller.py
-│   └── config/
-└── README.md                         
-```
