@@ -95,11 +95,11 @@ EOF
 
 # Configure static IP using NetworkManager
 echo " Configuring static IP with"
-sudo nmcli con mod "Wired connection 1" ipv4.addresses 172.30.81.82/24 2>/dev/null || \
-sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.addresses 172.30.81.82/24
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 172.30.81.83/24 2>/dev/null || \
+sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.addresses 172.30.81.83/24
 
-sudo nmcli con mod "Wired connection 1" ipv4.gateway 172.30.81.1 2>/dev/null || \
-sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.gateway 172.30.81.1
+sudo nmcli con mod "Wired connection 1" ipv4.gateway 172.30.81.15 2>/dev/null || \
+sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.gateway 172.30.81.15
 
 sudo nmcli con mod "Wired connection 1" ipv4.dns 8.8.8.8 2>/dev/null || \
 sudo nmcli con mod "$(nmcli -t -f NAME con show | head -n1)" ipv4.dns 8.8.8.8
@@ -143,7 +143,7 @@ echo "  http://$(hostname -I | awk '{print $1}'):8080/fpga_controller.html"
 echo "  http://fpga-controller.local:8080/fpga_controller.html"
 echo ""
 echo "MQTT Configuration:"
-echo "  External VerneMQ Broker: 172.30.81.106:1883"
+echo " Broker: 172.30.81.106:1883"
 echo "  WebSocket Port: 8083"
 echo ""
 echo "Service Status:"
@@ -170,7 +170,7 @@ echo ""
 echo " Setup complete!"
 echo ""
 echo "Configuration Summary:"
-echo "  Static IP: 172.30.81.82"
+echo "  Static IP: 172.30.81.83"
 echo "  Serving at: 172.30.81.106:1883"
 echo "  All services configured"
 echo ""
@@ -182,6 +182,6 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo nmcli con up "Wired connection 1" 2>/dev/null || \
     sudo nmcli con up "$(nmcli -t -f NAME con show | head -n1)" 2>/dev/null
-    echo "Network changes applied. IP should now be 172.30.81.82"
+    echo "Network changes applied. IP should now be 172.30.81.83"
     echo "Run 'ip addr show eth0' to verify"
 fi
